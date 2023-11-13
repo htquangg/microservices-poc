@@ -1,0 +1,28 @@
+Name: customer
+Environment: development
+
+web:
+  Host: 127.0.0.1
+  Port: 20000
+
+Rpc:
+  Host: 127.0.0.1
+  Port: 30000
+
+Mysql:
+  Host: 127.0.0.1
+  Port: 3306
+  User: "root"
+  Password: "1"
+  Schema: "dev-local-customer-001"
+  Charset: "utf8mb4"
+  AutoMigration: false
+  LogSQL: true
+  SslMode: false
+  MaxIdleConns: 1000
+  MaxOpenConns: 100
+  ConnMaxLifetime: 300
+
+Consul:
+  Host: 127.0.0.1
+  Port: 8500

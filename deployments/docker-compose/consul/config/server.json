@@ -1,0 +1,18 @@
+{
+    "datacenter": "dc1",
+    "data_dir": "/consul/data",
+    "ui": true,
+    "dns_config": {
+        "allow_stale": false
+    },
+    "log_level": "INFO",
+    "node_name": "consul",
+    "addresses": {
+      "http": "0.0.0.0"
+    },
+    "server": true,
+    "bootstrap_expect": 1,
+    "connect": {
+        "enabled": true
+    }
+}

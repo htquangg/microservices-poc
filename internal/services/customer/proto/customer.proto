@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package customerpb;
+
+option go_package = ",/;proto";
+
+service CustomerService {
+  rpc RegisterCustomer(RegisterCustomerRequest) returns (RegisterCustomerResponse) {}
+}
+
+message Customer {
+  string id = 1;
+  string name = 2;
+  string phone = 3;
+}
+
+message RegisterCustomerRequest {
+  string name = 1;
+  string phone = 2;
+}
+message RegisterCustomerResponse {
+  string id = 1;
+}
