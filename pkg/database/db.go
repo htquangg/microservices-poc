@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/htquangg/microservices-poc/pkg/logger"
+
 	"xorm.io/builder"
 	"xorm.io/xorm"
 	"xorm.io/xorm/names"
@@ -16,13 +18,14 @@ type DB struct {
 	e   *xorm.Engine
 }
 
-func New(ctx context.Context, cfg *Config) (*DB, error) {
+func New(ctx context.Context, log logger.Logger, cfg *Config) (*DB, error) {
 	xormEngine, err := NewXORMEngine(cfg)
 	if err != nil {
 		return nil, err
 	}
 
 	xormEngine.SetMapper(names.GonicMapper{})
+	xormEngine.SetLogger(NewXORMLogger(log, cfg.LogSQL))
 	xormEngine.ShowSQL(cfg.LogSQL)
 	xormEngine.SetMaxOpenConns(cfg.MaxOpenConns)
 	xormEngine.SetMaxIdleConns(cfg.MaxIdleConns)

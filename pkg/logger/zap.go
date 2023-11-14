@@ -45,6 +45,7 @@ func NewZapLogger(cfg *LogConfig) ZapLogger {
 func (l *zapLogger) getLoggerLevel() zapcore.Level {
 	level, exist := zapLoggerLevelMap[l.level]
 	if !exist {
+		l.level = "debug"
 		return zapcore.DebugLevel
 	}
 
@@ -67,6 +68,10 @@ func (l *zapLogger) initLogger() {
 
 func (l *zapLogger) Configure(cfg func(internalLog interface{})) {
 	cfg(l.logger)
+}
+
+func (l *zapLogger) Level() string {
+	return l.level
 }
 
 func (l *zapLogger) LogType() LogType {

@@ -98,7 +98,7 @@ func (s *System) Sonyflake() *uid.Sonyflake {
 }
 
 func (s *System) initDB() (err error) {
-	s.db, err = database.New(s.waiter.Context(), s.cfg.Mysql)
+	s.db, err = database.New(s.waiter.Context(), s.logger, s.cfg.Mysql)
 	if err != nil {
 		return err
 	}
