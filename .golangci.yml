@@ -29,8 +29,6 @@ linters-settings:
     disabled-checks:
       - dupImport
       - unnecessaryBlock
-  gofumpt:
-    extra-rules: true
   gomnd:
     settings:
       mnd:
@@ -49,6 +47,23 @@ linters-settings:
   nolintlint:
     require-explanation: true
     require-specific: true
+  revive:
+    severity: "warning"
+    confidence: 0.8
+    rules:
+      - name: dot-imports
+      - name: error-return
+      - name: var-declaration
+      - name: package-comments
+      - name: range
+      - name: receiver-naming
+      - name: time-naming
+      - name: indent-error-flow
+      - name: errorf
+      - name: empty-block
+      - name: superfluous-else
+      - name: unreachable-code
+      - name: redefines-builtin-id
 
 linters:
   disable-all: true
@@ -69,10 +84,8 @@ linters:
     - gocognit
     - gocritic
     - gocyclo
-    - godot
     - godox
     - goerr113
-    - gofmt
     - gofumpt
     - goimports
     - gomnd
@@ -99,7 +112,6 @@ linters:
     - unconvert
     - unparam
     - unused
-    - wsl
     - whitespace
 
 run:

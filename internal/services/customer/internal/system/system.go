@@ -162,8 +162,16 @@ func (s *System) WaitForWeb(ctx context.Context) error {
 	s.isRunningHTTP = true
 
 	webServer := &http.Server{
-		Addr:    s.cfg.Web.Address(),
-		Handler: s.router,
+		Addr:              s.cfg.Web.Address(),
+		Handler:           s.router,
+		ReadTimeout:       25 * time.Second,
+		WriteTimeout:      40 * time.Second,
+		ReadHeaderTimeout: 5 * time.Second,
+		IdleTimeout:       5 * time.Minute,
+		MaxHeaderBytes:    1 << 18, // 0.25 MB (262144 bytes)
+		BaseContext: func(l net.Listener) context.Context {
+			return ctx
+		},
 	}
 
 	group, gCtx := errgroup.WithContext(ctx)

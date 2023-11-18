@@ -14,7 +14,6 @@ air: ## run dev service and reloading
 
 .PHONY: lint
 lint: ## lint
-	revive -config revive-config.toml -formatter friendly ./...
 	staticcheck ./...
 	# golangci-lint run ./...
 
@@ -34,7 +33,7 @@ proto: ## compile proto file
 
 
 # ==============================================================================
-# Go migrate postgresql https://github.com/pressly/goose
+# Go migrate mysql https://github.com/pressly/goose
 
 DB_NAME = dev-local-customer-001
 DB_HOST = localhost

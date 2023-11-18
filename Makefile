@@ -1,12 +1,7 @@
 GOPATH:=$(shell go env GOPATH)
 
-.PHONY: dev-customer
-dev-customer: ## run dev customer service
-	@./scripts/run.sh customer
-
 .PHONY: lint
 lint: ## lint
-	revive -config revive-config.toml -formatter friendly ./...
 	staticcheck ./...
 	golangci-lint run ./...
 
@@ -18,6 +13,14 @@ format: ## format
 .PHONY: tidy
 tidy: ## add missing and remove unused modules
 	@go mod tidy
+
+.PHONY: deps
+deps: ## download modules to local cache
+	@go mod download
+
+.PHONY: dev-customer
+dev-customer: ## run dev customer service
+	@./scripts/run.sh customer
 
 .PHONY: docker-up
 docker-up: ## docker-compose up and detach

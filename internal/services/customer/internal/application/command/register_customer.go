@@ -26,7 +26,11 @@ type (
 	}
 )
 
-func NewRegisterCustomerHandler(customerRepo domain.CustomerRepository, publisher ddd.EventPublisher[ddd.AggregateEvent], log logger.Logger) RegisterCustomerHandler {
+func NewRegisterCustomerHandler(
+	customerRepo domain.CustomerRepository,
+	publisher ddd.EventPublisher[ddd.AggregateEvent],
+	log logger.Logger,
+) RegisterCustomerHandler {
 	return decorator.ApplyCommandDecorators[RegisterCustomer](
 		&registerCustomerHandler{
 			customerRepo: customerRepo,
@@ -41,12 +45,14 @@ func (h *registerCustomerHandler) Handle(ctx context.Context, cmd RegisterCustom
 		return err
 	}
 
-	if err = h.customerRepo.Save(ctx, customer); err != nil {
+	err = h.customerRepo.Save(ctx, customer)
+	if err != nil {
 		return err
 	}
 
 	// publish domain events
-	if err = h.publisher.Publish(ctx, customer.Events()...); err != nil {
+	err = h.publisher.Publish(ctx, customer.Events()...)
+	if err != nil {
 		return err
 	}
 

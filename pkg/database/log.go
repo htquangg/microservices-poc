@@ -65,7 +65,7 @@ func (l *XORMLogBridge) Level() xormlog.LogLevel {
 	return xormlog.LOG_UNKNOWN
 }
 
-func (*XORMLogBridge) SetLevel(l xormlog.LogLevel) {
+func (*XORMLogBridge) SetLevel(xormlog.LogLevel) {
 }
 
 func (l *XORMLogBridge) IsShowSQL() bool {

@@ -56,7 +56,7 @@ func New(options ...WaiterOption) Waiter {
 			syscall.SIGINT,
 			syscall.SIGTERM,
 			syscall.SIGQUIT,
-      syscall.SIGHUP,
+			syscall.SIGHUP,
 		)
 	}
 

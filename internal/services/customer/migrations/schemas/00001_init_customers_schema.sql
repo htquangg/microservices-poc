@@ -2,6 +2,7 @@
 -- +goose StatementBegin
 SELECT 'up SQL query';
 -- +goose StatementEnd
+
 CREATE TABLE IF NOT EXISTS customers (
   id BIGINT(20) PRIMARY KEY NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,

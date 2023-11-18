@@ -20,7 +20,11 @@ type (
 	Queries struct{}
 )
 
-func New(customerRepo domain.CustomerRepository, publisher ddd.EventPublisher[ddd.AggregateEvent], log logger.Logger) *Application {
+func New(
+	customerRepo domain.CustomerRepository,
+	publisher ddd.EventPublisher[ddd.AggregateEvent],
+	log logger.Logger,
+) *Application {
 	return &Application{
 		Commands: Commands{
 			RegisterCustomerHandler: command.NewRegisterCustomerHandler(customerRepo, publisher, log),

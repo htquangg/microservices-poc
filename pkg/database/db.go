@@ -7,7 +7,6 @@ import (
 
 	"github.com/htquangg/microservices-poc/pkg/logger"
 
-	"xorm.io/builder"
 	"xorm.io/xorm"
 	"xorm.io/xorm/names"
 )
@@ -43,7 +42,7 @@ func New(ctx context.Context, log logger.Logger, cfg *Config) (*DB, error) {
 	}, nil
 }
 
-// Engine will get a db Engine from this context or return an Engine restricted to this context
+// Engine will get a db Engine from this context or return an Engine restricted to this context.
 func (db *DB) Engine(ctx context.Context) Engine {
 	if e := db.engine(ctx); e != nil {
 		return e
@@ -51,7 +50,7 @@ func (db *DB) Engine(ctx context.Context) Engine {
 	return db.e.Context(ctx)
 }
 
-// engine will get a db Engine from this context or return nil
+// engine will get a db Engine from this context or return nil.
 func (db *DB) engine(ctx context.Context) Engine {
 	if engined, ok := ctx.(Engined); ok {
 		return engined.Engine()
@@ -75,6 +74,11 @@ func (db *DB) TxContext(parentCtx context.Context) (*Context, Committer, error) 
 		return nil, nil, err
 	}
 	return newContext(db.ctx, sess, true), sess, nil
+}
+
+// WithContext returns this engine tied to this context.
+func (ctx *Context) WithContext(other context.Context) *Context {
+	return newContext(ctx, ctx.e.Context(other), ctx.transaction)
 }
 
 // WithTx represents executing database operations on a transaction, if the transaction exist,
@@ -124,17 +128,6 @@ func (db *DB) DeleteByBean(ctx context.Context, bean any) (int64, error) {
 
 func (db *DB) DeleteByID(ctx context.Context, id int64, bean any) (int64, error) {
 	return db.Engine(ctx).ID(id).NoAutoCondition().NoAutoTime().Delete(bean)
-}
-
-func (db *DB) FindIDs(ctx context.Context, tableName, idCol string, cond builder.Cond) ([]int64, error) {
-	ids := make([]int64, 0, 10)
-	if err := db.Engine(ctx).Table(tableName).
-		Cols(idCol).
-		Where(cond).
-		Find(&ids); err != nil {
-		return nil, err
-	}
-	return ids, nil
 }
 
 func (db *DB) DecrByIDs(ctx context.Context, ids []int64, decrCol string, bean any) error {

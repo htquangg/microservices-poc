@@ -21,7 +21,12 @@ type server struct {
 	customerpb.UnimplementedCustomerServiceServer
 }
 
-func RegisterServer(app *application.Application, db *database.DB, sf *uid.Sonyflake, registrar grpc.ServiceRegistrar) error {
+func RegisterServer(
+	app *application.Application,
+	db *database.DB,
+	sf *uid.Sonyflake,
+	registrar grpc.ServiceRegistrar,
+) error {
 	customerpb.RegisterCustomerServiceServer(registrar, &server{
 		app: app,
 		db:  db,
@@ -30,7 +35,10 @@ func RegisterServer(app *application.Application, db *database.DB, sf *uid.Sonyf
 	return nil
 }
 
-func (s *server) RegisterCustomer(ctx context.Context, request *customerpb.RegisterCustomerRequest) (*customerpb.RegisterCustomerResponse, error) {
+func (s *server) RegisterCustomer(
+	ctx context.Context,
+	request *customerpb.RegisterCustomerRequest,
+) (*customerpb.RegisterCustomerResponse, error) {
 	id := s.sf.ID()
 	errTx := s.db.WithTx(ctx, func(ctx context.Context) error {
 		err := s.app.Commands.RegisterCustomerHandler.Handle(ctx, command.RegisterCustomer{
