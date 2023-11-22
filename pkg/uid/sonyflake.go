@@ -9,6 +9,7 @@ import (
 
 type Sonyflake struct {
 	sonyflake *sf.Sonyflake
+	serverID  uint16
 }
 
 func NewSonyflake() *Sonyflake {
@@ -20,16 +21,17 @@ func NewSonyflake() *Sonyflake {
 
 	if serverID > 0 {
 		return &Sonyflake{
-			sf.NewSonyflake(sf.Settings{
+			sonyflake: sf.NewSonyflake(sf.Settings{
 				MachineID: func() (uint16, error) {
 					return serverID, nil
 				},
 			}),
+			serverID: serverID,
 		}
 	}
 
 	return &Sonyflake{
-		sf.NewSonyflake(sf.Settings{}),
+		sonyflake: sf.NewSonyflake(sf.Settings{}),
 	}
 }
 
@@ -40,4 +42,8 @@ func (s *Sonyflake) ID() string {
 	}
 
 	return strconv.FormatUint(id, 10)
+}
+
+func (s *Sonyflake) ServerID() uint16 {
+	return s.serverID
 }
