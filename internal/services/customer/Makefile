@@ -1,47 +1,77 @@
-GOPATH:=$(shell go env GOPATH)
+ifndef GOPATH
+	GOPATH := $(shell go env GOPATH)
+endif
+ifndef GOBIN # derive value from gopath (default to first entry, similar to 'go get')
+	GOBIN := $(shell go env GOPATH | sed 's/:.*//')/bin
+endif
+
+SERVICE_NAME=customer
+
+###############################################################################
+#
+# Build and testing rules
+#
+###############################################################################
+.PHONY: build
+build: ## build the service binary
+	@echo "Building ${SERVICE_NAME} server"
+	@go build -o ./bin/${SERVICE_NAME} main.go
 
 .PHONY: dev
 dev: ## run dev service
 	@go run main.go
 
-.PHONY: build
-build: ## build service
-	@go build main.go
-
 .PHONY: air
-air: ## run dev service and reloading
+air: ## live reloading dev service
 	@air -c .air.toml
 
+.PHONY: test
+test: ## run the go tests
+	@echo "Running tests"
+	go test -v -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out
+
+###############################################################################
+#
+# Code formatting and linting
+#
+###############################################################################
 .PHONY: lint
 lint: ## lint
-	staticcheck ./...
-	# golangci-lint run ./...
+	@echo "Linting"
+	golangci-lint run ./...
 
 .PHONY: format
 format: ## format
+	@echo "Formating ..."
 	golines -m 120 -w --ignore-generated .
 	gofumpt -l -w .
+	@echo "Formatting complete"
 
-.PHONY: tidy
-tidy: ## add missing and remove unused modules
-	@go mod tidy
-
+###############################################################################
+# Code Generation
+#
+# Some code generation can be slow, so we only run it if
+# the source file has changed.
+###############################################################################
 .PHONY: proto
 proto: ## compile proto file
 	@echo Generating proto
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative ./proto/*.proto
 
-
-# ==============================================================================
-# Go migrate mysql https://github.com/pressly/goose
-
-DB_NAME = dev-local-customer-001
+###############################################################################
+#
+# Database migration
+#
+###############################################################################
+DB_NAME = dev-local-${SERVICE_NAME}-001
 DB_HOST = localhost
 DB_PORT = 3306
 DB_USER = root
 DB_PASS = 1
 DB_PARSE_TIME = true
 
+# Go migrate mysql https://github.com/pressly/goose
 .PHONY: migrate-create
 migrate-create: ## create new migration file
 	@./scripts/goose-migrate.sh -p ./migrations/schemas -c create ${name}
@@ -60,6 +90,6 @@ migrate-status: ## check the migration status for the current DB
 
 .PHONY: help
 help: ## print help
-	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_0-9-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST) | sort
+	@awk 'BEGIN {FS = ":.*##"; printf "Usage:\n  make \033[36m\033[0m\n"} /^[$$()% 0-9a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
 .DEFAULT_GOAL := help
