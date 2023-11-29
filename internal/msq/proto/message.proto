@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package kafkapb;
+
+option go_package = ",/;proto";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+
+message Message {
+  string id = 1;
+  string name = 2;
+  bytes data = 3;
+  google.protobuf.Struct metadata = 4;
+  google.protobuf.Timestamp  sent_at = 5;
+}

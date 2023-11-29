@@ -65,6 +65,18 @@ sec: ## detect vulnerability go packages
 	@govulncheck ./...
 
 ###############################################################################
+# Code Generation
+#
+# Some code generation can be slow, so we only run it if
+# the source file has changed.
+###############################################################################
+.PHONY: proto
+proto: ## compile proto file
+	@echo Generating intergrate message  proto
+	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative ./internal/am/proto/*.proto
+	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative ./internal/msq/proto/*.proto
+
+###############################################################################
 #
 # Infrastructure
 #

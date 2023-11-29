@@ -18,11 +18,11 @@ type Customer struct {
 type CustomerOption func(*Customer) error
 
 var (
-	ErrNameCannotBeBlank       = errors.Wrap(errors.ErrBadRequest, "the customer username cannot be blank")
-	ErrEmailAlreadyExists      = errors.Wrap(errors.ErrBadRequest, "the customer email is already existed")
-	ErrCustomerIDCannotBeBlank = errors.Wrap(errors.ErrBadRequest, "the customer id cannot be blank")
-	ErrSmsNumberCannotBeBlank  = errors.Wrap(errors.ErrBadRequest, "the SMS number cannot be blank")
-	ErrCustomerNotAuthorized   = errors.Wrap(errors.ErrUnauthorized, "customer is not authorized")
+	ErrNameCannotBeBlank        = errors.Wrap(errors.ErrBadRequest, "the customer username cannot be blank")
+	ErrEmailAlreadyExists       = errors.Wrap(errors.ErrBadRequest, "the customer email is already existed")
+	ErrCustomerIDCannotBeBlank  = errors.Wrap(errors.ErrBadRequest, "the customer id cannot be blank")
+	ErrPhoneNumberCannotBeBlank = errors.Wrap(errors.ErrBadRequest, "the phone number cannot be blank")
+	ErrCustomerNotAuthorized    = errors.Wrap(errors.ErrUnauthorized, "customer is not authorized")
 )
 
 func (c *Customer) Name() string {
@@ -54,8 +54,13 @@ func RegisterCustomer(id, name, phone string, options ...CustomerOption) (*Custo
 	if id == "" {
 		return nil, ErrCustomerIDCannotBeBlank
 	}
+
 	if name == "" {
 		return nil, ErrNameCannotBeBlank
+	}
+
+	if phone == "" {
+		return nil, ErrPhoneNumberCannotBeBlank
 	}
 
 	customer := NewCustomer(id)

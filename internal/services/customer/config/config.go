@@ -5,6 +5,7 @@ import (
 	"github.com/htquangg/microservices-poc/pkg/constants"
 	"github.com/htquangg/microservices-poc/pkg/database"
 	"github.com/htquangg/microservices-poc/pkg/discovery/consul"
+	"github.com/htquangg/microservices-poc/pkg/kafka"
 	"github.com/htquangg/microservices-poc/pkg/rpc"
 	"github.com/htquangg/microservices-poc/pkg/web"
 )
@@ -18,6 +19,7 @@ type (
 		Rpc    *rpc.Config      `mapstructure:"rpc,omitempty"`
 		Mysql  *database.Config `mapstructure:"mysql,omitempty"`
 		Consul *consul.Config   `mapstructure:"consul"`
+		Kafka  *kafka.Config    `mapstructure:"kafka"`
 	}
 )
 
