@@ -36,10 +36,10 @@ type (
 	}
 
 	MessagePublisher interface {
-		Publish(ctx context.Context, topicName string, msg Message) error
+		Publish(ctx context.Context, topicName string, msgs ...Message) error
 	}
 
-	MessagePublisherFunc func(ctx context.Context, topicName string, msg Message) error
+	MessagePublisherFunc func(ctx context.Context, topicName string, msgs ...Message) error
 
 	MessageHandler interface {
 		HandleMessage(ctx context.Context, msg IncomingMessage) error
@@ -101,8 +101,8 @@ func (m message) SentAt() time.Time {
 	return m.sentAt
 }
 
-func (f MessagePublisherFunc) Publish(ctx context.Context, topicName string, msg Message) error {
-	return f(ctx, topicName, msg)
+func (f MessagePublisherFunc) Publish(ctx context.Context, topicName string, msgs ...Message) error {
+	return f(ctx, topicName, msgs...)
 }
 
 func (f MessageHandlerFunc) HandleMessage(ctx context.Context, cmd IncomingMessage) error {
@@ -115,8 +115,8 @@ func NewMessagePublisher(publisher MessagePublisher, mws ...MessagePublisherMidd
 	}
 }
 
-func (p messagePublisher) Publish(ctx context.Context, topicName string, msg Message) error {
-	return p.publisher.Publish(ctx, topicName, msg)
+func (p messagePublisher) Publish(ctx context.Context, topicName string, msg ...Message) error {
+	return p.publisher.Publish(ctx, topicName, msg...)
 }
 
 func NewMessageSubscriber(subscriber MessageSubscriber, mws ...MessageHandlerMiddleware) MessageSubscriber {

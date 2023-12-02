@@ -46,6 +46,13 @@ var (
 	_ EventPublisher = (*eventPublisher)(nil)
 )
 
+func NewEventPublisher(reg registry.Registry, msgPublisher MessagePublisher, mws ...MessagePublisherMiddleware) EventPublisher {
+	return eventPublisher{
+		reg:       reg,
+		publisher: MessagePublisherWithMiddleware(msgPublisher, mws...),
+	}
+}
+
 func (p eventPublisher) Publish(ctx context.Context, topicName string, event ddd.Event) error {
 	payload, err := p.reg.Serializer(event.EventName(), event.Payload())
 	if err != nil {

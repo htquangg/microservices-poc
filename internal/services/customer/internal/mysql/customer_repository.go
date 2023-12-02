@@ -27,13 +27,13 @@ type CustomerRepository struct {
 	db *database.DB
 }
 
-func NewCustomerRepository(db *database.DB) *CustomerRepository {
-	return &CustomerRepository{
+func NewCustomerRepository(db *database.DB) CustomerRepository {
+	return CustomerRepository{
 		db: db,
 	}
 }
 
-func (r *CustomerRepository) Save(ctx context.Context, c *domain.Customer) error {
+func (r CustomerRepository) Save(ctx context.Context, c *domain.Customer) error {
 	return r.db.Insert(ctx, &customer{
 		ID:    c.ID(),
 		Name:  c.Name(),
@@ -42,10 +42,10 @@ func (r *CustomerRepository) Save(ctx context.Context, c *domain.Customer) error
 	})
 }
 
-func (*CustomerRepository) Find(ctx context.Context, customerID string) (*domain.Customer, error) {
+func (CustomerRepository) Find(ctx context.Context, customerID string) (*domain.Customer, error) {
 	panic("unimplemented")
 }
 
-func (*CustomerRepository) Update(ctx context.Context, customer *domain.Customer) error {
+func (CustomerRepository) Update(ctx context.Context, customer *domain.Customer) error {
 	panic("unimplemented")
 }

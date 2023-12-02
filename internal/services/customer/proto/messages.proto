@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package customerpb;
+
+option go_package = ",/;proto";
+
+message CustomerRegistered {
+  string id = 1;
+  string email = 2;
+  string phone = 3;
+}

@@ -8,6 +8,7 @@ require (
 	github.com/google/uuid v1.4.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/consul/api v1.25.1
+	github.com/htquangg/di/v2 v2.0.0-20231202083211-23679999e54c
 	github.com/sony/sonyflake v1.2.0
 	github.com/stackus/errors v0.1.5
 	xorm.io/xorm v1.3.4

@@ -13,7 +13,7 @@ Mysql:
   Host: 127.0.0.1
   Port: 3306
   User: "root"
-  Password: "1"
+  Password: "toor"
   Schema: "dev-local-customer-001"
   Charset: "utf8mb4"
   AutoMigration: false

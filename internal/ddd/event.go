@@ -2,6 +2,8 @@ package ddd
 
 import (
 	"time"
+
+	"github.com/htquangg/microservices-poc/pkg/uid"
 )
 
 type (
@@ -35,7 +37,7 @@ func NewEvent(name string, payload EventPayload, options ...EventOption) Event {
 
 func newEvent(name string, payload EventPayload, options ...EventOption) event {
 	evt := event{
-		Entity:     NewEntity("", name),
+		Entity:     NewEntity(uid.GetManager().ID(), name),
 		payload:    payload,
 		metadata:   make(Metadata),
 		occurredAt: time.Now(),

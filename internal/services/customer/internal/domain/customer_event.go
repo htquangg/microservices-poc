@@ -1,8 +1,7 @@
 package domain
 
 const (
-	CustomerRegisteredEvent   = "customers.CustomerRegistered"
-	CustomerPhoneChangedEvent = "customers.CustomerPhoneChanged"
+	CustomerRegisteredEvent = "customers.CustomerRegistered"
 )
 
 type CustomerRegistered struct {
@@ -11,12 +10,4 @@ type CustomerRegistered struct {
 
 func (CustomerRegistered) Key() string {
 	return CustomerRegisteredEvent
-}
-
-type CustomerPhoneChanged struct {
-	Customer *Customer
-}
-
-func (CustomerPhoneChanged) Key() string {
-	return CustomerPhoneChangedEvent
 }

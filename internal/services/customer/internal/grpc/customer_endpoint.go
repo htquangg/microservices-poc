@@ -3,21 +3,23 @@ package grpc
 import (
 	"context"
 
+	"github.com/htquangg/microservices-poc/internal/services/customer/constants"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/application"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/application/command"
 	customerpb "github.com/htquangg/microservices-poc/internal/services/customer/proto"
 	"github.com/htquangg/microservices-poc/pkg/uid"
 
 	"github.com/go-kit/kit/endpoint"
+	"github.com/htquangg/di/v2"
 )
 
 type customerEndpoints struct {
 	registerCustomerEndpoint endpoint.Endpoint
 }
 
-func makeCustomerEndpoints(app *application.Application, sf *uid.Sonyflake) customerEndpoints {
+func makeCustomerEndpoints(c di.Container, sf *uid.Sonyflake) customerEndpoints {
 	return customerEndpoints{
-		registerCustomerEndpoint: makeRegisterCustomerEndpoint(app, sf),
+		registerCustomerEndpoint: makeRegisterCustomerEndpoint(c, sf),
 	}
 }
 
@@ -48,8 +50,10 @@ func encodeRegisterCustomerResponse(_ context.Context, response interface{}) (in
 	}, resp.Err
 }
 
-func makeRegisterCustomerEndpoint(app *application.Application, sf *uid.Sonyflake) endpoint.Endpoint {
+func makeRegisterCustomerEndpoint(c di.Container, sf *uid.Sonyflake) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		app := di.Get(ctx, constants.ApplicationKey).(*application.Application)
+
 		req := request.(registerCustomerRequest)
 
 		customerID := sf.ID()

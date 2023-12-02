@@ -68,7 +68,7 @@ DB_NAME = dev-local-${SERVICE_NAME}-001
 DB_HOST = localhost
 DB_PORT = 3306
 DB_USER = root
-DB_PASS = 1
+DB_PASS = toor
 DB_PARSE_TIME = true
 
 # Go migrate mysql https://github.com/pressly/goose
