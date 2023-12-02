@@ -9,8 +9,10 @@ require (
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/consul/api v1.25.1
 	github.com/htquangg/di/v2 v2.0.0-20231202083211-23679999e54c
+	github.com/segmentio/kafka-go v0.4.45
 	github.com/sony/sonyflake v1.2.0
 	github.com/stackus/errors v0.1.5
+	github.com/stretchr/testify v1.8.4
 	xorm.io/xorm v1.3.4
 )
 
@@ -37,9 +39,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pierrec/lz4/v4 v4.1.18 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
-	github.com/segmentio/kafka-go v0.4.45 // indirect
 	github.com/stretchr/objx v0.5.1 // indirect
-	github.com/stretchr/testify v1.8.4 // indirect
 	github.com/syndtr/goleveldb v1.0.0 // indirect
 	xorm.io/builder v0.3.13 // indirect
 )

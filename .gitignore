@@ -141,7 +141,8 @@ log.txt
 # VSCode config
 .vscode/
 
-## Go build output
+## Go build output, debugger
 **/tmp
 **/bin
 *.out
+__debug*
