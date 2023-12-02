@@ -4,12 +4,12 @@ import (
 	"os"
 	"strconv"
 
-	sf "github.com/sony/sonyflake"
+	"github.com/sony/sonyflake"
 )
 
 type Sonyflake struct {
-	sonyflake *sf.Sonyflake
-	serverID  uint16
+	sf       *sonyflake.Sonyflake
+	serverID uint16
 }
 
 func NewSonyflake() *Sonyflake {
@@ -21,7 +21,7 @@ func NewSonyflake() *Sonyflake {
 
 	if serverID > 0 {
 		return &Sonyflake{
-			sonyflake: sf.NewSonyflake(sf.Settings{
+			sf: sonyflake.NewSonyflake(sonyflake.Settings{
 				MachineID: func() (uint16, error) {
 					return serverID, nil
 				},
@@ -31,12 +31,12 @@ func NewSonyflake() *Sonyflake {
 	}
 
 	return &Sonyflake{
-		sonyflake: sf.NewSonyflake(sf.Settings{}),
+		sf: sonyflake.NewSonyflake(sonyflake.Settings{}),
 	}
 }
 
 func (s *Sonyflake) ID() string {
-	id, err := s.sonyflake.NextID()
+	id, err := s.sf.NextID()
 	if err != nil {
 		return s.ID()
 	}
