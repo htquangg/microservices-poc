@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/htquangg/microservices-poc/internal/services/customer/config"
+	"github.com/htquangg/microservices-poc/pkg/uid"
 )
 
 type Config struct {
@@ -16,7 +17,7 @@ type Config struct {
 
 func (s *System) webID() string {
 	if s.cfg.webID == "" {
-		id := s.Sonyflake().ID()
+		id := uid.GetManager().ID()
 		s.cfg.webID = fmt.Sprintf("http-%s-svc-%s", s.cfg.Name, id)
 	}
 	return s.cfg.webID
@@ -31,7 +32,7 @@ func (s *System) webName() string {
 
 func (s *System) rpcID() string {
 	if s.cfg.rpcID == "" {
-		id := s.Sonyflake().ID()
+		id := uid.GetManager().ID()
 		s.cfg.rpcID = fmt.Sprintf("rpc-%s-svc-%s", s.cfg.Name, id)
 	}
 	return s.cfg.rpcID

@@ -17,9 +17,9 @@ type customerEndpoints struct {
 	registerCustomerEndpoint endpoint.Endpoint
 }
 
-func makeCustomerEndpoints(c di.Container, sf *uid.Sonyflake) customerEndpoints {
+func makeCustomerEndpoints(c di.Container) customerEndpoints {
 	return customerEndpoints{
-		registerCustomerEndpoint: makeRegisterCustomerEndpoint(c, sf),
+		registerCustomerEndpoint: makeRegisterCustomerEndpoint(c),
 	}
 }
 
@@ -50,22 +50,21 @@ func encodeRegisterCustomerResponse(_ context.Context, response interface{}) (in
 	}, resp.Err
 }
 
-func makeRegisterCustomerEndpoint(c di.Container, sf *uid.Sonyflake) endpoint.Endpoint {
+func makeRegisterCustomerEndpoint(c di.Container) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		app := di.Get(ctx, constants.ApplicationKey).(*application.Application)
 
+		id := uid.GetManager().ID()
+
 		req := request.(registerCustomerRequest)
-
-		customerID := sf.ID()
-
 		err := app.Commands.RegisterCustomerHandler.Handle(ctx, command.RegisterCustomer{
-			ID:    customerID,
+			ID:    id,
 			Name:  req.Name,
 			Phone: req.Phone,
 		})
 
 		return registerCustomerResponse{
-			ID:  customerID,
+			ID:  id,
 			Err: err,
 		}, nil
 	}

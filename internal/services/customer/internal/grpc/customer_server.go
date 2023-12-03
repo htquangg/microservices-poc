@@ -5,7 +5,6 @@ import (
 
 	customerpb "github.com/htquangg/microservices-poc/internal/services/customer/proto"
 	"github.com/htquangg/microservices-poc/pkg/database"
-	"github.com/htquangg/microservices-poc/pkg/uid"
 
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 	"github.com/htquangg/di/v2"
@@ -16,9 +15,9 @@ var _ customerpb.CustomerServiceServer = (*customerServer)(nil)
 
 type customerServer struct {
 	customerpb.UnimplementedCustomerServiceServer
+
 	c  di.Container
 	db *database.DB
-	sf *uid.Sonyflake
 
 	registerCustomer grpctransport.Handler
 }
@@ -26,24 +25,19 @@ type customerServer struct {
 func registerCustomerServer(
 	c di.Container,
 	db *database.DB,
-	sf *uid.Sonyflake,
 	registrar grpc.ServiceRegistrar,
 ) error {
-	s := customerServer{
+	endpoints := makeCustomerEndpoints(c)
+
+	customerpb.RegisterCustomerServiceServer(registrar, customerServer{
 		c:  c,
 		db: db,
-		sf: sf,
-	}
-
-	endpoints := makeCustomerEndpoints(c, s.sf)
-
-	s.registerCustomer = grpctransport.NewServer(
-		endpoints.registerCustomerEndpoint,
-		decodeRegisterCustomerRequest,
-		encodeRegisterCustomerResponse,
-	)
-
-	customerpb.RegisterCustomerServiceServer(registrar, s)
+		registerCustomer: grpctransport.NewServer(
+			endpoints.registerCustomerEndpoint,
+			decodeRegisterCustomerRequest,
+			encodeRegisterCustomerResponse,
+		),
+	})
 
 	return nil
 }

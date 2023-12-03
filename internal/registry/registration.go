@@ -32,7 +32,14 @@ func RegisterKey(reg Registry, key string, v interface{}, s Serializer, d Deseri
 	}, s, d, os)
 }
 
-func RegisterFactory(reg Registry, key string, fn func() interface{}, s Serializer, d Deserializer, os []BuildOption) error {
+func RegisterFactory(
+	reg Registry,
+	key string,
+	fn func() interface{},
+	s Serializer,
+	d Deserializer,
+	os []BuildOption,
+) error {
 	if v := fn(); v == nil {
 		return fmt.Errorf("factory for item `%s` return a nil value", key)
 	}

@@ -46,7 +46,11 @@ var (
 	_ EventPublisher = (*eventPublisher)(nil)
 )
 
-func NewEventPublisher(reg registry.Registry, msgPublisher MessagePublisher, mws ...MessagePublisherMiddleware) EventPublisher {
+func NewEventPublisher(
+	reg registry.Registry,
+	msgPublisher MessagePublisher,
+	mws ...MessagePublisherMiddleware,
+) EventPublisher {
 	return eventPublisher{
 		reg:       reg,
 		publisher: MessagePublisherWithMiddleware(msgPublisher, mws...),
@@ -134,7 +138,11 @@ type eventMessageHandler struct {
 	handler ddd.EventHandler[ddd.Event]
 }
 
-func NewEventHandler(reg registry.Registry, handler ddd.EventHandler[ddd.Event], mws ...MessageHandlerMiddleware) MessageHandler {
+func NewEventHandler(
+	reg registry.Registry,
+	handler ddd.EventHandler[ddd.Event],
+	mws ...MessageHandlerMiddleware,
+) MessageHandler {
 	return MessageHandlerWithMiddleware(eventMessageHandler{
 		reg:     reg,
 		handler: handler,

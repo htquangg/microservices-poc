@@ -126,7 +126,11 @@ func NewMessageSubscriber(subscriber MessageSubscriber, mws ...MessageHandlerMid
 	}
 }
 
-func (s messageSubscriber) Subscribe(topicName string, handler MessageHandler, options ...SubscriberOption) (Subscription, error) {
+func (s messageSubscriber) Subscribe(
+	topicName string,
+	handler MessageHandler,
+	options ...SubscriberOption,
+) (Subscription, error) {
 	return s.subscriber.Subscribe(topicName, MessageHandlerWithMiddleware(handler, s.mws...), options...)
 }
 

@@ -14,7 +14,6 @@ import (
 	"github.com/htquangg/microservices-poc/pkg/discovery/consul"
 	"github.com/htquangg/microservices-poc/pkg/logger"
 	"github.com/htquangg/microservices-poc/pkg/rpc"
-	"github.com/htquangg/microservices-poc/pkg/uid"
 	"github.com/htquangg/microservices-poc/pkg/waiter"
 	"github.com/htquangg/microservices-poc/pkg/web"
 
@@ -36,7 +35,6 @@ type System struct {
 	rpc       *grpc.Server
 	discovery discovery.Registry
 
-	sf     *uid.Sonyflake
 	logger logger.Logger
 	waiter waiter.Waiter
 
@@ -51,7 +49,6 @@ func New(cfg *config.Config) (*System, error) {
 
 	s.initWaiter()
 	s.initLogger()
-	s.initSonyflake()
 
 	if err := s.initDB(); err != nil {
 		return nil, err
@@ -87,14 +84,6 @@ func (s *System) initLogger() {
 
 func (s *System) Logger() logger.Logger {
 	return s.logger
-}
-
-func (s *System) initSonyflake() {
-	s.sf = uid.NewSonyflake()
-}
-
-func (s *System) Sonyflake() *uid.Sonyflake {
-	return s.sf
 }
 
 func (s *System) initDB() (err error) {

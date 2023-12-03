@@ -6,7 +6,6 @@ import (
 	"github.com/htquangg/microservices-poc/pkg/database"
 	"github.com/htquangg/microservices-poc/pkg/discovery"
 	"github.com/htquangg/microservices-poc/pkg/logger"
-	"github.com/htquangg/microservices-poc/pkg/uid"
 	"github.com/htquangg/microservices-poc/pkg/waiter"
 
 	"google.golang.org/grpc"
@@ -18,7 +17,6 @@ type Service interface {
 	Router() *mux.Router
 	RPC() *grpc.Server
 	Discovery() discovery.Registry
-	Sonyflake() *uid.Sonyflake
 	Logger() logger.Logger
 	Waiter() waiter.Waiter
 }

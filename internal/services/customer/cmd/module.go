@@ -45,7 +45,6 @@ func startUp(_ context.Context, svc system.Service) error {
 			return mysql.NewCustomerRepository(svc.DB()), nil
 		},
 	})
-	// customerRepo := mysql.NewCustomerRepository(svc.DB())
 	builder.Add(di.Def{
 		Name:  constants.DomainDispatcherKey,
 		Scope: di.App,
@@ -62,7 +61,6 @@ func startUp(_ context.Context, svc system.Service) error {
 			return am.NewMessagePublisher(queue, tm.OutboxPublisher(outboxRepo)), nil
 		},
 	})
-
 	builder.Add(di.Def{
 		Name:  constants.EventPublisherKey,
 		Scope: di.Request,
@@ -80,7 +78,11 @@ func startUp(_ context.Context, svc system.Service) error {
 		Scope: di.Request,
 		Build: func(c di.Container) (interface{}, error) {
 			domainDispatcher := c.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.AggregateEvent])
-			return application.New(c.Get(constants.CustomerRepoKey).(mysql.CustomerRepository), domainDispatcher, svc.Logger()), nil
+			return application.New(
+				c.Get(constants.CustomerRepoKey).(mysql.CustomerRepository),
+				domainDispatcher,
+				svc.Logger(),
+			), nil
 		},
 	})
 	builder.Add(di.Def{
@@ -94,7 +96,7 @@ func startUp(_ context.Context, svc system.Service) error {
 	container := builder.Build()
 
 	// setup Driver adapters
-	if err := grpc.RegisterServer(container, svc.DB(), svc.Sonyflake(), svc.RPC()); err != nil {
+	if err := grpc.RegisterServer(container, svc.DB(), svc.RPC()); err != nil {
 		return err
 	}
 	handlers.RegisterDomainEventHandlers(container)
