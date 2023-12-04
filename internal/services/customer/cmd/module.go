@@ -16,11 +16,12 @@ import (
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/system"
 	customerpb "github.com/htquangg/microservices-poc/internal/services/customer/proto"
 	"github.com/htquangg/microservices-poc/internal/tm"
+	"github.com/htquangg/microservices-poc/pkg/logger"
 
 	"github.com/htquangg/di/v2"
 )
 
-func startUp(_ context.Context, svc system.Service) error {
+func startUp(ctx context.Context, svc system.Service) error {
 	builder, err := di.NewBuilder()
 	if err != nil {
 		return err
@@ -92,6 +93,7 @@ func startUp(_ context.Context, svc system.Service) error {
 			return handlers.NewDomainEventHandlers(c.Get(constants.EventPublisherKey).(am.EventPublisher)), nil
 		},
 	})
+	outboxProcessor := tm.NewOutboxProcessor(queue, internal_mysql.NewOutboxStore(svc.DB()))
 
 	container := builder.Build()
 
@@ -100,6 +102,16 @@ func startUp(_ context.Context, svc system.Service) error {
 		return err
 	}
 	handlers.RegisterDomainEventHandlers(container)
+	startOutboxProcessor(ctx, outboxProcessor, svc.Logger())
 
 	return nil
+}
+
+func startOutboxProcessor(ctx context.Context, outboxProcessor tm.OutboxProcessor, log logger.Logger) {
+	go func() {
+		err := outboxProcessor.Start(ctx)
+		if err != nil {
+			log.Err("customer outbox processor encountered an error", err)
+		}
+	}()
 }

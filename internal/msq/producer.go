@@ -9,7 +9,7 @@ import (
 	"github.com/htquangg/microservices-poc/pkg/kafka"
 	"github.com/htquangg/microservices-poc/pkg/logger"
 
-	seg_kafka "github.com/segmentio/kafka-go"
+	go_kafka "github.com/segmentio/kafka-go"
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/types/known/structpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -32,11 +32,11 @@ func (p *KafkaProducer) Publish(ctx context.Context, topicName string, rawMsgs .
 		"topic": topicName,
 	}
 
-	msgs := make([]seg_kafka.Message, 0, len(rawMsgs))
+	msgs := make([]go_kafka.Message, 0, len(rawMsgs))
 
 	for _, rawMsg := range rawMsgs {
 		logFields["message_id"] = rawMsg.ID()
-		p.log.Debugw("Sending message to kafka", logFields)
+		p.log.Debugw("sending message to kafka", logFields)
 
 		metadata, err := structpb.NewStruct(rawMsg.Metadata())
 		if err != nil {
@@ -55,7 +55,7 @@ func (p *KafkaProducer) Publish(ctx context.Context, topicName string, rawMsgs .
 		}
 
 		msgs = append(msgs,
-			seg_kafka.Message{
+			go_kafka.Message{
 				Topic: rawMsg.Subject(),
 				Value: data,
 				Time:  time.Now(),
@@ -68,7 +68,7 @@ func (p *KafkaProducer) Publish(ctx context.Context, topicName string, rawMsgs .
 		return err
 	}
 
-	p.log.Debug("Messages sent to kafka")
+	p.log.Debug("messages sent to kafka")
 
 	return nil
 }

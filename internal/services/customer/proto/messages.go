@@ -6,14 +6,14 @@ import (
 )
 
 const (
-	CustomerAggregateChannel = "alex.customers.events.Customer"
+	CustomerAggregateChannel = "mall.customers.events.Customer"
 
 	CustomerRegisteredEvent = "customerapi.CustomerRegistered"
 	CustomerSmsChangedEvent = "customerapi.CustomerSmsChanged"
 	CustomerEnabledEvent    = "customerapi.CustomerEnabled"
 	CustomerDisabledEvent   = "customerapi.CustomerDisabled"
 
-	CommandChannel = "alex.customers.commands"
+	CommandChannel = "mall.customers.commands"
 
 	AuthorizeCustomerCommand = "customersapi.AuthorizeCustomer"
 )

@@ -8,8 +8,8 @@ import (
 
 type OutboxStore interface {
 	Save(ctx context.Context, msgs ...am.Message) error
-	FindUnpublished(ctx context.Context, limit int) ([]am.Message, error)
-	MarkPublished(ctx context.Context, ids string) error
+	FindUnpublished(ctx context.Context, currentOffset string, limit int) ([]am.Message, error)
+	MarkPublished(ctx context.Context, currentOffset string, lastOffset string) error
 }
 
 func OutboxPublisher(store OutboxStore) am.MessagePublisherMiddleware {

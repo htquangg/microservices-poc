@@ -82,12 +82,47 @@ func (s OutboxStore) Save(ctx context.Context, msgs ...am.Message) error {
 	return err
 }
 
-func (s OutboxStore) FindUnpublished(ctx context.Context, limit int) ([]am.Message, error) {
-	panic("not implemented") // TODO: Implement
+func (s OutboxStore) FindUnpublished(ctx context.Context, currentOffset string, limit int) ([]am.Message, error) {
+	query := fmt.Sprintf("SELECT id, subject, name, data, metadata, sent_at FROM %s "+
+		"WHERE id > ? AND published_at IS NULL ORDER BY id ASC LIMIT ?", OUTBOX_TABLE)
+
+	results, err := s.db.Engine(ctx).Query(query, currentOffset, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	msgs := make([]am.Message, 0, len(results))
+
+	for _, result := range results {
+		tp, err := time.ParseInLocation("2006-01-02 15:04:05", string(result["sent_at"]), time.Local)
+		if err != nil {
+			return nil, err
+		}
+
+		msg := outboxMessage{
+			id:      string(result["id"]),
+			subject: string(result["subject"]),
+			name:    string(result["name"]),
+			data:    result["data"],
+			sentAt:  tp,
+		}
+
+		if err = json.Unmarshal(result["metadata"], &msg.metadata); err != nil {
+			return nil, err
+		}
+
+		msgs = append(msgs, msg)
+	}
+
+	return msgs, nil
 }
 
-func (s OutboxStore) MarkPublished(ctx context.Context, ids string) error {
-	panic("not implemented") // TODO: Implement
+func (s OutboxStore) MarkPublished(ctx context.Context, currentOffset string, lastOffset string) error {
+	query := fmt.Sprintf("UPDATE %s SET published_at = CURRENT_TIMESTAMP where id >= ? and id <= ?", OUTBOX_TABLE)
+
+	_, err := s.db.Exec(ctx, query, currentOffset, lastOffset)
+
+	return err
 }
 
 func (m outboxMessage) ID() string {
