@@ -49,7 +49,7 @@ func (s OutboxStore) Save(ctx context.Context, msgs ...am.Message) error {
 	}
 
 	buf := &strings.Builder{}
-	buf.WriteString(fmt.Sprintf("INSERT INTO %s (id, subject, name, data, metadata, sent_at) VALUES ", OUTBOX_TABLE))
+	fmt.Fprintf(buf, "INSERT INTO %s (id, subject, name, data, metadata, sent_at) VALUES ", OUTBOX_TABLE)
 
 	vals := make([]interface{}, 1, len(msgs)+1)
 

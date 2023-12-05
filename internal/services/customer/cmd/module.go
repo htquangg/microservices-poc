@@ -5,7 +5,7 @@ import (
 
 	"github.com/htquangg/microservices-poc/internal/am"
 	"github.com/htquangg/microservices-poc/internal/ddd"
-	"github.com/htquangg/microservices-poc/internal/msq"
+	"github.com/htquangg/microservices-poc/internal/kafka"
 	internal_mysql "github.com/htquangg/microservices-poc/internal/mysql"
 	"github.com/htquangg/microservices-poc/internal/registry"
 	"github.com/htquangg/microservices-poc/internal/services/customer/constants"
@@ -53,13 +53,13 @@ func startUp(ctx context.Context, svc system.Service) error {
 			return ddd.NewEventDispatcher[ddd.AggregateEvent](), nil
 		},
 	})
-	queue := msq.NewKafkaProducer(svc.Config().Kafka.Brokers, svc.Logger())
+	kafkaProducer := kafka.NewProducer(svc.Config().Kafka.Brokers, svc.Logger())
 	builder.Add(di.Def{
 		Name:  constants.MessagePublisherKey,
 		Scope: di.Request,
 		Build: func(_ di.Container) (interface{}, error) {
 			outboxRepo := internal_mysql.NewOutboxStore(svc.DB())
-			return am.NewMessagePublisher(queue, tm.OutboxPublisher(outboxRepo)), nil
+			return am.NewMessagePublisher(kafkaProducer, tm.OutboxPublisher(outboxRepo)), nil
 		},
 	})
 	builder.Add(di.Def{
@@ -93,7 +93,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 			return handlers.NewDomainEventHandlers(c.Get(constants.EventPublisherKey).(am.EventPublisher)), nil
 		},
 	})
-	outboxProcessor := tm.NewOutboxProcessor(queue, internal_mysql.NewOutboxStore(svc.DB()))
+	outboxProcessor := tm.NewOutboxProcessor(kafkaProducer, internal_mysql.NewOutboxStore(svc.DB()))
 
 	container := builder.Build()
 

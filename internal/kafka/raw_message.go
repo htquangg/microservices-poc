@@ -1,4 +1,4 @@
-package msq
+package kafka
 
 import (
 	"time"
