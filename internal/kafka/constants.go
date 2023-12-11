@@ -7,11 +7,12 @@ const (
 	maxBytes               = 10e6 // 10MB
 	queueCapacity          = 100
 	heartbeatInterval      = 3 * time.Second
-	commitInterval         = 0
+	commitInterval         = time.Second
 	partitionWatchInterval = 5 * time.Second
 	maxAttempts            = 3
 	dialTimeout            = 3 * time.Minute
-	maxWait                = 1 * time.Second
+	dialKeepAlive          = time.Minute
+	maxWait                = time.Second
 
 	writerReadTimeout  = 10 * time.Second
 	writerWriteTimeout = 10 * time.Second

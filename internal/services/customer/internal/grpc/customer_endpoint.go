@@ -27,6 +27,7 @@ type (
 	registerCustomerRequest struct {
 		Name  string `json:"name"`
 		Phone string `json:"phone"`
+		Email string `json:"email"`
 	}
 	registerCustomerResponse struct {
 		ID        string `json:"id"`
@@ -40,6 +41,7 @@ func decodeRegisterCustomerRequest(_ context.Context, grpcReq interface{}) (inte
 	return registerCustomerRequest{
 		Name:  req.GetName(),
 		Phone: req.GetPhone(),
+		Email: req.GetEmail(),
 	}, nil
 }
 
@@ -61,6 +63,7 @@ func makeRegisterCustomerEndpoint(c di.Container) endpoint.Endpoint {
 			ID:    id,
 			Name:  req.Name,
 			Phone: req.Phone,
+			Email: req.Email,
 		})
 
 		return registerCustomerResponse{

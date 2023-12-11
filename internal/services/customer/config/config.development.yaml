@@ -28,6 +28,6 @@ Consul:
   Port: 8500
 
 kafka:
-  brokers: [ "host.docker.internal:9092" ]
+  brokers: [ "localhost:9092" ]
   groupID: api_gateway_consumer
   initTopics: true

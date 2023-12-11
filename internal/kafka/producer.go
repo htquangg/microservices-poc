@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/htquangg/microservices-poc/internal/am"
-	proto_msq "github.com/htquangg/microservices-poc/internal/kafka/proto"
+	proto_kafka "github.com/htquangg/microservices-poc/internal/kafka/proto"
 	"github.com/htquangg/microservices-poc/pkg/logger"
 
 	"github.com/segmentio/kafka-go"
@@ -42,9 +42,9 @@ func (p *Producer) Publish(ctx context.Context, topicName string, rawMsgs ...am.
 			return err
 		}
 
-		data, err := proto.Marshal(&proto_msq.Message{
+		data, err := proto.Marshal(&proto_kafka.Message{
 			Id:       rawMsg.ID(),
-			Name:     rawMsg.Subject(),
+			Name:     rawMsg.MessageName(),
 			Data:     rawMsg.Data(),
 			Metadata: metadata,
 			SentAt:   timestamppb.New(rawMsg.SentAt()),

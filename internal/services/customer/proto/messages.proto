@@ -6,6 +6,7 @@ option go_package = ",/;proto";
 
 message CustomerRegistered {
   string id = 1;
-  string email = 2;
+  string name = 2;
   string phone = 3;
+  string email = 4;
 }

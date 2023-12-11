@@ -9,8 +9,8 @@ import (
 
 func NewWriter(brokers []string, log logger.Logger) *kafka.Writer {
 	return &kafka.Writer{
-		Addr: kafka.TCP(brokers...),
-		// Balancer:    &kafka.RoundRobin{},
+		Addr:                   kafka.TCP(brokers...),
+		Balancer:               &kafka.LeastBytes{},
 		RequiredAcks:           writerRequiredAcks,
 		MaxAttempts:            writerMaxAttempts,
 		Logger:                 kafka.LoggerFunc(log.Printf),

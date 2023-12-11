@@ -58,8 +58,9 @@ func (h domainHandlers[T]) onCustomerRegistered(ctx context.Context, event ddd.A
 		customerpb.CustomerAggregateChannel,
 		ddd.NewEvent(customerpb.CustomerRegisteredEvent, &customerpb.CustomerRegistered{
 			Id:    payload.Customer.ID(),
-			Email: payload.Customer.Email(),
+			Name:  payload.Customer.Name(),
 			Phone: payload.Customer.Phone(),
+			Email: payload.Customer.Email(),
 		}),
 	)
 }

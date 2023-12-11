@@ -40,7 +40,7 @@ func NewRegisterCustomerHandler(
 }
 
 func (h *registerCustomerHandler) Handle(ctx context.Context, cmd RegisterCustomer) error {
-	customer, err := domain.RegisterCustomer(cmd.ID, cmd.Name, cmd.Phone, domain.WithCustomerEmail(cmd.Email))
+	customer, err := domain.RegisterCustomer(cmd.ID, cmd.Name, cmd.Phone, cmd.Email)
 	if err != nil {
 		return err
 	}

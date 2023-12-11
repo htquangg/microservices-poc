@@ -12,11 +12,13 @@ message Customer {
   string id = 1;
   string name = 2;
   string phone = 3;
+  string email = 4;
 }
 
 message RegisterCustomerRequest {
   string name = 1;
   string phone = 2;
+  string email = 3;
 }
 message RegisterCustomerResponse {
   string id = 1;

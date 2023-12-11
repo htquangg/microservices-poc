@@ -27,7 +27,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 		return err
 	}
 
-	// setup Driven adapters
+	// setup driven adapters
 	builder.Add(di.Def{
 		Name:  constants.RegistryKey,
 		Scope: di.App,
@@ -54,6 +54,10 @@ func startUp(ctx context.Context, svc system.Service) error {
 		},
 	})
 	kafkaProducer := kafka.NewProducer(svc.Config().Kafka.Brokers, svc.Logger())
+	go func(ctx context.Context) error {
+		<-ctx.Done()
+		return kafkaProducer.Close()
+	}(ctx)
 	builder.Add(di.Def{
 		Name:  constants.MessagePublisherKey,
 		Scope: di.Request,
@@ -97,7 +101,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 
 	container := builder.Build()
 
-	// setup Driver adapters
+	// setup driver adapters
 	if err := grpc.RegisterServer(container, svc.DB(), svc.RPC()); err != nil {
 		return err
 	}
