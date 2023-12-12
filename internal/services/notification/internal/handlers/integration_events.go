@@ -27,7 +27,7 @@ func NewIntegrationEventHandlers(
 	return am.NewEventHandler(reg, intergrationHandlers[ddd.Event]{
 		app:          app,
 		customerRepo: customerRepo,
-	})
+	}, mws...)
 }
 
 func RegisterIntergrationEventHandlers(subscriber am.MessageSubscriber, handlers am.MessageHandler) error {
