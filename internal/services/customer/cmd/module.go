@@ -6,7 +6,7 @@ import (
 	"github.com/htquangg/microservices-poc/internal/am"
 	"github.com/htquangg/microservices-poc/internal/ddd"
 	"github.com/htquangg/microservices-poc/internal/kafka"
-	internal_mysql "github.com/htquangg/microservices-poc/internal/mysql"
+	mysql_internal "github.com/htquangg/microservices-poc/internal/mysql"
 	"github.com/htquangg/microservices-poc/internal/registry"
 	"github.com/htquangg/microservices-poc/internal/services/customer/constants"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/application"
@@ -14,7 +14,7 @@ import (
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/handlers"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/mysql"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/system"
-	customerpb "github.com/htquangg/microservices-poc/internal/services/customer/proto"
+	pb_customer "github.com/htquangg/microservices-poc/internal/services/customer/proto"
 	"github.com/htquangg/microservices-poc/internal/tm"
 	"github.com/htquangg/microservices-poc/pkg/logger"
 
@@ -33,7 +33,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 		Scope: di.App,
 		Build: func(_ di.Container) (interface{}, error) {
 			reg := registry.New()
-			if err := customerpb.Registrations(reg); err != nil {
+			if err := pb_customer.Registrations(reg); err != nil {
 				return nil, err
 			}
 			return reg, nil
@@ -62,7 +62,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 		Name:  constants.MessagePublisherKey,
 		Scope: di.Request,
 		Build: func(_ di.Container) (interface{}, error) {
-			outboxRepo := internal_mysql.NewOutboxStore(svc.DB())
+			outboxRepo := mysql_internal.NewOutboxStore(svc.DB())
 			return am.NewMessagePublisher(kafkaProducer, tm.OutboxPublisher(outboxRepo)), nil
 		},
 	})
@@ -97,7 +97,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 			return handlers.NewDomainEventHandlers(c.Get(constants.EventPublisherKey).(am.EventPublisher)), nil
 		},
 	})
-	outboxProcessor := tm.NewOutboxProcessor(kafkaProducer, internal_mysql.NewOutboxStore(svc.DB()))
+	outboxProcessor := tm.NewOutboxProcessor(kafkaProducer, mysql_internal.NewOutboxStore(svc.DB()))
 
 	container := builder.Build()
 

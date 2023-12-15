@@ -6,7 +6,7 @@ import (
 	"github.com/htquangg/microservices-poc/internal/services/customer/constants"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/application"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/application/command"
-	customerpb "github.com/htquangg/microservices-poc/internal/services/customer/proto"
+	pb_customer "github.com/htquangg/microservices-poc/internal/services/customer/proto"
 	"github.com/htquangg/microservices-poc/pkg/uid"
 
 	"github.com/go-kit/kit/endpoint"
@@ -37,7 +37,7 @@ type (
 )
 
 func decodeRegisterCustomerRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
-	req := grpcReq.(*customerpb.RegisterCustomerRequest)
+	req := grpcReq.(*pb_customer.RegisterCustomerRequest)
 	return registerCustomerRequest{
 		Name:  req.GetName(),
 		Phone: req.GetPhone(),
@@ -47,7 +47,7 @@ func decodeRegisterCustomerRequest(_ context.Context, grpcReq interface{}) (inte
 
 func encodeRegisterCustomerResponse(_ context.Context, response interface{}) (interface{}, error) {
 	resp := response.(registerCustomerResponse)
-	return &customerpb.RegisterCustomerResponse{
+	return &pb_customer.RegisterCustomerResponse{
 		Id: resp.ID,
 	}, resp.Err
 }

@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"sync"
 
-	kitconsul "github.com/go-kit/kit/sd/consul"
+	consul_sd_kit "github.com/go-kit/kit/sd/consul"
 	consul "github.com/hashicorp/consul/api"
 	"github.com/hashicorp/consul/api/watch"
 	"github.com/htquangg/microservices-poc/pkg/discovery"
@@ -19,7 +19,7 @@ type consulClient struct {
 	mutex       sync.Mutex
 	instanceMap sync.Map
 	log         logger.Logger
-	client      kitconsul.Client
+	client      consul_sd_kit.Client
 }
 
 func New(cfg *Config, log logger.Logger) (*consulClient, error) {
@@ -44,7 +44,7 @@ func (dc *consulClient) initClient() (err error) {
 		return err
 	}
 
-	dc.client = kitconsul.NewClient(apiClient)
+	dc.client = consul_sd_kit.NewClient(apiClient)
 
 	return nil
 }

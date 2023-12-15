@@ -4,14 +4,14 @@ import (
 	"context"
 
 	"github.com/htquangg/microservices-poc/internal/services/notification/internal/application"
-	notificationpb "github.com/htquangg/microservices-poc/internal/services/notification/proto"
+	pb_notification "github.com/htquangg/microservices-poc/internal/services/notification/proto"
 
 	"google.golang.org/grpc"
 )
 
 type server struct {
 	app *application.Application
-	notificationpb.UnimplementedNotificationServiceServer
+	pb_notification.UnimplementedNotificationServiceServer
 }
 
 func RegisterServer(
@@ -19,6 +19,6 @@ func RegisterServer(
 	app *application.Application,
 	registrar grpc.ServiceRegistrar,
 ) error {
-	notificationpb.RegisterNotificationServiceServer(registrar, server{app: app})
+	pb_notification.RegisterNotificationServiceServer(registrar, server{app: app})
 	return nil
 }

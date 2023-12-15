@@ -6,9 +6,9 @@ import (
 
 	"github.com/htquangg/microservices-poc/internal/am"
 	"github.com/htquangg/microservices-poc/internal/kafka"
-	internal_mysql "github.com/htquangg/microservices-poc/internal/mysql"
+	mysql_internal "github.com/htquangg/microservices-poc/internal/mysql"
 	"github.com/htquangg/microservices-poc/internal/registry"
-	customerpb "github.com/htquangg/microservices-poc/internal/services/customer/proto"
+	pb_customer "github.com/htquangg/microservices-poc/internal/services/customer/proto"
 	"github.com/htquangg/microservices-poc/internal/services/notification/internal/application"
 	"github.com/htquangg/microservices-poc/internal/services/notification/internal/grpc"
 	"github.com/htquangg/microservices-poc/internal/services/notification/internal/handlers"
@@ -20,10 +20,10 @@ import (
 func startUp(ctx context.Context, svc system.Service) error {
 	// setup driven adapters
 	reg := registry.New()
-	if err := customerpb.Registrations(reg); err != nil {
+	if err := pb_customer.Registrations(reg); err != nil {
 		return err
 	}
-	inboxStore := internal_mysql.NewInboxStore(svc.DB())
+	inboxStore := mysql_internal.NewInboxStore(svc.DB())
 	messageSubscriber := am.NewMessageSubscriber(kafka.NewConsumer(&kafka.ConsumerConfig{
 		Brokers:        svc.Config().Kafka.Brokers,
 		Log:            svc.Logger(),

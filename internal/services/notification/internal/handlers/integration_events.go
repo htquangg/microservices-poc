@@ -8,7 +8,7 @@ import (
 	"github.com/htquangg/microservices-poc/internal/registry"
 	"github.com/htquangg/microservices-poc/internal/services/notification/internal/application"
 
-	customerpb "github.com/htquangg/microservices-poc/internal/services/customer/proto"
+	pb_customer "github.com/htquangg/microservices-poc/internal/services/customer/proto"
 )
 
 type intergrationHandlers[T ddd.Event] struct {
@@ -31,15 +31,15 @@ func NewIntegrationEventHandlers(
 }
 
 func RegisterIntergrationEventHandlers(subscriber am.MessageSubscriber, handlers am.MessageHandler) error {
-	_, err := subscriber.Subscribe(customerpb.CustomerAggregateChannel, handlers, am.MessageFilter{
-		customerpb.CustomerRegisteredEvent,
+	_, err := subscriber.Subscribe(pb_customer.CustomerAggregateChannel, handlers, am.MessageFilter{
+		pb_customer.CustomerRegisteredEvent,
 	})
 	return err
 }
 
 func (h intergrationHandlers[T]) HandleEvent(ctx context.Context, event T) error {
 	switch event.EventName() {
-	case customerpb.CustomerRegisteredEvent:
+	case pb_customer.CustomerRegisteredEvent:
 		return h.onCustomerRegistered(ctx, event)
 	}
 
@@ -47,6 +47,6 @@ func (h intergrationHandlers[T]) HandleEvent(ctx context.Context, event T) error
 }
 
 func (h intergrationHandlers[T]) onCustomerRegistered(ctx context.Context, event T) error {
-	payload := (event.Payload()).(*customerpb.CustomerRegistered)
+	payload := (event.Payload()).(*pb_customer.CustomerRegistered)
 	return h.customerRepo.Add(ctx, payload.GetId(), payload.GetName(), payload.GetPhone(), payload.GetEmail())
 }

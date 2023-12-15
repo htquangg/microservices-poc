@@ -17,7 +17,7 @@ import (
 	"github.com/htquangg/microservices-poc/pkg/waiter"
 	"github.com/htquangg/microservices-poc/pkg/web"
 
-	kitgrpc "github.com/go-kit/kit/transport/grpc"
+	grpc_transport "github.com/go-kit/kit/transport/grpc"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"golang.org/x/sync/errgroup"
@@ -120,7 +120,7 @@ func (s *System) Router() *mux.Router {
 
 func (s *System) initRPC() {
 	s.rpc = grpc.NewServer(
-		grpc.UnaryInterceptor(kitgrpc.Interceptor),
+		grpc.UnaryInterceptor(grpc_transport.Interceptor),
 	)
 
 	if s.cfg.IsDevelopment() {

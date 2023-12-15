@@ -7,7 +7,7 @@ import (
 	"github.com/htquangg/microservices-poc/internal/ddd"
 	"github.com/htquangg/microservices-poc/internal/services/customer/constants"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/domain"
-	customerpb "github.com/htquangg/microservices-poc/internal/services/customer/proto"
+	pb_customer "github.com/htquangg/microservices-poc/internal/services/customer/proto"
 
 	"github.com/htquangg/di/v2"
 )
@@ -55,8 +55,8 @@ func (h domainHandlers[T]) onCustomerRegistered(ctx context.Context, event ddd.A
 	payload := event.Payload().(*domain.CustomerRegistered)
 	return h.publisher.Publish(
 		ctx,
-		customerpb.CustomerAggregateChannel,
-		ddd.NewEvent(customerpb.CustomerRegisteredEvent, &customerpb.CustomerRegistered{
+		pb_customer.CustomerAggregateChannel,
+		ddd.NewEvent(pb_customer.CustomerRegisteredEvent, &pb_customer.CustomerRegistered{
 			Id:    payload.Customer.ID(),
 			Name:  payload.Customer.Name(),
 			Phone: payload.Customer.Phone(),
