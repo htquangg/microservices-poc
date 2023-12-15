@@ -1,0 +1,33 @@
+Name: store
+Environment: development
+
+web:
+  Host: 127.0.0.1
+  Port: 32001
+
+Rpc:
+  Host: 127.0.0.1
+  Port: 32002
+
+Mysql:
+  Host: 127.0.0.1
+  Port: 3306
+  User: "root"
+  Password: "toor"
+  Schema: "dev-local-store-001"
+  Charset: "utf8mb4"
+  AutoMigration: false
+  LogSQL: true
+  SslMode: false
+  MaxIdleConns: 1000
+  MaxOpenConns: 100
+  ConnMaxLifetime: 300
+
+Consul:
+  Host: 127.0.0.1
+  Port: 8500
+
+kafka:
+  brokers: [ "localhost:9092" ]
+  groupID: api_gateway_consumer
+  initTopics: true

@@ -132,7 +132,7 @@ $(GOBIN)/protoc-gen-go-grpc:
 
 # Install air to live reloading
 $(GOBIN)/air:
-	go install github.com/cosmtrek/air@latst
+	go install github.com/cosmtrek/air@latest
 
 .PHONY: help
 help: ## print help
