@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/go-kit/kit v0.13.0
 	github.com/go-sql-driver/mysql v1.7.1
-	github.com/google/uuid v1.4.0
+	github.com/google/uuid v1.5.0
 	github.com/gorilla/mux v1.8.0
 	github.com/hashicorp/consul/api v1.25.1
 	github.com/htquangg/di/v2 v2.0.0-20231202083211-23679999e54c
