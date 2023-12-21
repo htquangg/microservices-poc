@@ -1,4 +1,4 @@
-package command
+package commands
 
 import (
 	"context"
@@ -17,7 +17,8 @@ type (
 		Email string
 	}
 
-	RegisterCustomerHandler decorator.CommandHandler[RegisterCustomer]
+	RegisterCustomerHandler  decorator.CommandHandler[RegisterCustomer]
+	RegisterCustomerHandler2 decorator.CommandHandler[RegisterCustomer]
 
 	registerCustomerHandler struct {
 		customerRepo domain.CustomerRepository

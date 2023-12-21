@@ -11,13 +11,31 @@ import (
 	"xorm.io/xorm/names"
 )
 
-type DB struct {
-	ctx context.Context
-	cfg *Config
-	e   *xorm.Engine
-}
+type (
+	db struct {
+		ctx context.Context
+		cfg *Config
+		e   *xorm.Engine
+	}
 
-func New(ctx context.Context, log logger.Logger, cfg *Config) (*DB, error) {
+	DB interface {
+		Engine(ctx context.Context) Engine
+		TxContext(parentCtx context.Context) (*Context, Committer, error)
+		WithTx(parentCtx context.Context, f func(ctx context.Context) error) error
+		Insert(ctx context.Context, beans ...any) error
+		Exec(ctx context.Context, sqlAndArgs ...any) (sql.Result, error)
+		GetByBean(ctx context.Context, bean any) (bool, error)
+		DeleteByBean(ctx context.Context, bean any) (int64, error)
+		DeleteByID(ctx context.Context, id int64, bean any) (int64, error)
+		DecrByIDs(ctx context.Context, ids []int64, decrCol string, bean any) error
+		DeleteBeans(ctx context.Context, beans ...any) (err error)
+		TruncateBeans(ctx context.Context, beans ...any) (err error)
+		CountByBean(ctx context.Context, bean any) (int64, error)
+		InTransaction(ctx context.Context) bool
+	}
+)
+
+func New(ctx context.Context, log logger.Logger, cfg *Config) (*db, error) {
 	xormEngine, err := NewXORMEngine(cfg)
 	if err != nil {
 		return nil, err
@@ -32,7 +50,7 @@ func New(ctx context.Context, log logger.Logger, cfg *Config) (*DB, error) {
 	xormEngine.SetTZDatabase(time.UTC)
 	xormEngine.SetDefaultContext(ctx)
 
-	return &DB{
+	return &db{
 		e:   xormEngine,
 		cfg: cfg,
 		ctx: &Context{
@@ -43,7 +61,7 @@ func New(ctx context.Context, log logger.Logger, cfg *Config) (*DB, error) {
 }
 
 // Engine will get a db Engine from this context or return an Engine restricted to this context.
-func (db *DB) Engine(ctx context.Context) Engine {
+func (db *db) Engine(ctx context.Context) Engine {
 	if e := db.engine(ctx); e != nil {
 		return e
 	}
@@ -51,7 +69,7 @@ func (db *DB) Engine(ctx context.Context) Engine {
 }
 
 // engine will get a db Engine from this context or return nil.
-func (db *DB) engine(ctx context.Context) Engine {
+func (db *db) engine(ctx context.Context) Engine {
 	if engined, ok := ctx.(Engined); ok {
 		return engined.Engine()
 	}
@@ -64,7 +82,7 @@ func (db *DB) engine(ctx context.Context) Engine {
 
 // TxContext represents a transaction Context,
 // it will reuse the existing transaction in the parent context or create a new one.
-func (db *DB) TxContext(parentCtx context.Context) (*Context, Committer, error) {
+func (db *db) TxContext(parentCtx context.Context) (*Context, Committer, error) {
 	if sess, ok := db.inTransaction(parentCtx); ok {
 		return newContext(parentCtx, sess, true), &halfCommitter{committer: sess}, nil
 	}
@@ -83,7 +101,7 @@ func (ctx *Context) WithContext(other context.Context) *Context {
 
 // WithTx represents executing database operations on a transaction, if the transaction exist,
 // this function will reuse it otherwise will create a new one and close it when finished.
-func (db *DB) WithTx(parentCtx context.Context, f func(ctx context.Context) error) error {
+func (db *db) WithTx(parentCtx context.Context, f func(ctx context.Context) error) error {
 	if sess, ok := db.inTransaction(parentCtx); ok {
 		err := f(newContext(parentCtx, sess, true))
 		if err != nil {
@@ -95,7 +113,7 @@ func (db *DB) WithTx(parentCtx context.Context, f func(ctx context.Context) erro
 	return db.txWithNoCheck(parentCtx, f)
 }
 
-func (db *DB) txWithNoCheck(parentCtx context.Context, f func(ctx context.Context) error) error {
+func (db *db) txWithNoCheck(parentCtx context.Context, f func(ctx context.Context) error) error {
 	sess := db.e.NewSession()
 	defer sess.Close()
 	if err := sess.Begin(); err != nil {
@@ -109,33 +127,33 @@ func (db *DB) txWithNoCheck(parentCtx context.Context, f func(ctx context.Contex
 	return sess.Commit()
 }
 
-func (db *DB) Insert(ctx context.Context, beans ...any) error {
+func (db *db) Insert(ctx context.Context, beans ...any) error {
 	_, err := db.Engine(ctx).Insert(beans...)
 	return err
 }
 
-func (db *DB) Exec(ctx context.Context, sqlAndArgs ...any) (sql.Result, error) {
+func (db *db) Exec(ctx context.Context, sqlAndArgs ...any) (sql.Result, error) {
 	return db.Engine(ctx).Exec(sqlAndArgs...)
 }
 
-func (db *DB) GetByBean(ctx context.Context, bean any) (bool, error) {
+func (db *db) GetByBean(ctx context.Context, bean any) (bool, error) {
 	return db.Engine(ctx).Get(bean)
 }
 
-func (db *DB) DeleteByBean(ctx context.Context, bean any) (int64, error) {
+func (db *db) DeleteByBean(ctx context.Context, bean any) (int64, error) {
 	return db.Engine(ctx).Delete(bean)
 }
 
-func (db *DB) DeleteByID(ctx context.Context, id int64, bean any) (int64, error) {
+func (db *db) DeleteByID(ctx context.Context, id int64, bean any) (int64, error) {
 	return db.Engine(ctx).ID(id).NoAutoCondition().NoAutoTime().Delete(bean)
 }
 
-func (db *DB) DecrByIDs(ctx context.Context, ids []int64, decrCol string, bean any) error {
+func (db *db) DecrByIDs(ctx context.Context, ids []int64, decrCol string, bean any) error {
 	_, err := db.Engine(ctx).Decr(decrCol).In("id", ids).NoAutoCondition().NoAutoTime().Update(bean)
 	return err
 }
 
-func (db *DB) DeleteBeans(ctx context.Context, beans ...any) (err error) {
+func (db *db) DeleteBeans(ctx context.Context, beans ...any) (err error) {
 	e := db.Engine(ctx)
 	for i := range beans {
 		if _, err = e.Delete(beans[i]); err != nil {
@@ -145,7 +163,7 @@ func (db *DB) DeleteBeans(ctx context.Context, beans ...any) (err error) {
 	return nil
 }
 
-func (db *DB) TruncateBeans(ctx context.Context, beans ...any) (err error) {
+func (db *db) TruncateBeans(ctx context.Context, beans ...any) (err error) {
 	e := db.Engine(ctx)
 	for i := range beans {
 		if _, err = e.Truncate(beans[i]); err != nil {
@@ -155,16 +173,16 @@ func (db *DB) TruncateBeans(ctx context.Context, beans ...any) (err error) {
 	return nil
 }
 
-func (db *DB) CountByBean(ctx context.Context, bean any) (int64, error) {
+func (db *db) CountByBean(ctx context.Context, bean any) (int64, error) {
 	return db.Engine(ctx).Count(bean)
 }
 
-func (db *DB) InTransaction(ctx context.Context) bool {
+func (db *db) InTransaction(ctx context.Context) bool {
 	_, ok := db.inTransaction(ctx)
 	return ok
 }
 
-func (db *DB) inTransaction(ctx context.Context) (*xorm.Session, bool) {
+func (db *db) inTransaction(ctx context.Context) (*xorm.Session, bool) {
 	e := db.engine(ctx)
 	if e == nil {
 		return nil, false

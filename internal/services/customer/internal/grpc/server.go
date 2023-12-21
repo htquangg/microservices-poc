@@ -9,7 +9,7 @@ import (
 
 func RegisterServer(
 	c di.Container,
-	db *database.DB,
+	db database.DB,
 	registrar grpc.ServiceRegistrar,
 ) error {
 	if err := registerCustomerServer(c, db, registrar); err != nil {

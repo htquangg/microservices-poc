@@ -5,7 +5,7 @@ import (
 
 	"github.com/htquangg/microservices-poc/internal/services/customer/constants"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/application"
-	"github.com/htquangg/microservices-poc/internal/services/customer/internal/application/command"
+	"github.com/htquangg/microservices-poc/internal/services/customer/internal/application/commands"
 	pb_customer "github.com/htquangg/microservices-poc/internal/services/customer/proto"
 	"github.com/htquangg/microservices-poc/pkg/uid"
 
@@ -59,7 +59,7 @@ func makeRegisterCustomerEndpoint(c di.Container) endpoint.Endpoint {
 		id := uid.GetManager().ID()
 
 		req := request.(registerCustomerRequest)
-		err := app.Commands.RegisterCustomerHandler.Handle(ctx, command.RegisterCustomer{
+		err := app.Commands.RegisterCustomerHandler.Handle(ctx, commands.RegisterCustomer{
 			ID:    id,
 			Name:  req.Name,
 			Phone: req.Phone,

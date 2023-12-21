@@ -58,7 +58,7 @@ func NewEventPublisher(
 }
 
 func (p eventPublisher) Publish(ctx context.Context, topicName string, event ddd.Event) error {
-	payload, err := p.reg.Serializer(event.EventName(), event.Payload())
+	payload, err := p.reg.Serialize(event.EventName(), event.Payload())
 	if err != nil {
 		return err
 	}
@@ -159,7 +159,7 @@ func (h eventMessageHandler) HandleMessage(ctx context.Context, msg IncomingMess
 
 	eventName := msg.MessageName()
 
-	payload, err := h.reg.Deserializer(eventName, eventData.GetPayload())
+	payload, err := h.reg.Deserialize(eventName, eventData.GetPayload())
 	if err != nil {
 		return err
 	}

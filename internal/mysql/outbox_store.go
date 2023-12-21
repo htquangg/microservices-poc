@@ -13,10 +13,10 @@ import (
 	"github.com/htquangg/microservices-poc/pkg/database"
 )
 
-const OUTBOX_TABLE = "outboxes"
+const OutboxTable = "outboxes"
 
 type OutboxStore struct {
-	db *database.DB
+	db database.DB
 }
 
 type outboxMessage struct {
@@ -29,7 +29,7 @@ type outboxMessage struct {
 }
 
 func (outboxMessage) TableName() string {
-	return OUTBOX_TABLE
+	return OutboxTable
 }
 
 var (
@@ -37,8 +37,8 @@ var (
 	_ am.Message     = (*outboxMessage)(nil)
 )
 
-func NewOutboxStore(db *database.DB) *OutboxStore {
-	return &OutboxStore{
+func NewOutboxStore(db database.DB) OutboxStore {
+	return OutboxStore{
 		db: db,
 	}
 }
@@ -49,7 +49,11 @@ func (s OutboxStore) Save(ctx context.Context, msgs ...am.Message) error {
 	}
 
 	buf := &strings.Builder{}
-	fmt.Fprintf(buf, "INSERT INTO %s (id, subject, name, data, metadata, sent_at) VALUES ", OUTBOX_TABLE)
+	fmt.Fprint(buf,
+		s.table(`
+			INSERT INTO %s (id, subject, name, data, metadata, sent_at) VALUES
+		`),
+	)
 
 	vals := make([]interface{}, 1, len(msgs)+1)
 
@@ -83,8 +87,8 @@ func (s OutboxStore) Save(ctx context.Context, msgs ...am.Message) error {
 }
 
 func (s OutboxStore) FindUnpublished(ctx context.Context, currentOffset string, limit int) ([]am.Message, error) {
-	query := fmt.Sprintf("SELECT id, subject, name, data, metadata, sent_at FROM %s "+
-		"WHERE id > ? AND published_at IS NULL ORDER BY id ASC LIMIT ?", OUTBOX_TABLE)
+	query := s.table("SELECT id, subject, name, data, metadata, sent_at FROM %s " +
+		"WHERE id > ? AND published_at IS NULL ORDER BY id ASC LIMIT ?")
 
 	results, err := s.db.Engine(ctx).Query(query, currentOffset, limit)
 	if err != nil {
@@ -118,7 +122,7 @@ func (s OutboxStore) FindUnpublished(ctx context.Context, currentOffset string, 
 }
 
 func (s OutboxStore) MarkPublished(ctx context.Context, currentOffset string, lastOffset string) error {
-	query := fmt.Sprintf("UPDATE %s SET published_at = CURRENT_TIMESTAMP where id >= ? and id <= ?", OUTBOX_TABLE)
+	query := s.table("UPDATE %s SET published_at = CURRENT_TIMESTAMP where id >= ? and id <= ?")
 
 	_, err := s.db.Exec(ctx, query, currentOffset, lastOffset)
 
@@ -147,4 +151,8 @@ func (m outboxMessage) SentAt() time.Time {
 
 func (m outboxMessage) Data() []byte {
 	return m.data
+}
+
+func (s OutboxStore) table(query string) string {
+	return fmt.Sprintf(query, OutboxTable)
 }

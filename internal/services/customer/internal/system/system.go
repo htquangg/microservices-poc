@@ -29,7 +29,7 @@ import (
 type System struct {
 	cfg *Config
 
-	db *database.DB
+	db database.DB
 
 	router    *mux.Router
 	rpc       *grpc.Server
@@ -100,7 +100,7 @@ func (s *System) initDB() (err error) {
 	return nil
 }
 
-func (s *System) DB() *database.DB {
+func (s *System) DB() database.DB {
 	return s.db
 }
 

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"net/http"
 	"time"
 
 	"github.com/htquangg/microservices-poc/internal/services/notification/config"
@@ -15,11 +14,8 @@ import (
 	"github.com/htquangg/microservices-poc/pkg/logger"
 	"github.com/htquangg/microservices-poc/pkg/rpc"
 	"github.com/htquangg/microservices-poc/pkg/waiter"
-	"github.com/htquangg/microservices-poc/pkg/web"
 
 	grpc_transport "github.com/go-kit/kit/transport/grpc"
-	"github.com/gorilla/handlers"
-	"github.com/gorilla/mux"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -29,9 +25,8 @@ import (
 type System struct {
 	cfg *Config
 
-	db *database.DB
+	db database.DB
 
-	router    *mux.Router
 	rpc       *grpc.Server
 	discovery discovery.Registry
 
@@ -53,7 +48,6 @@ func New(cfg *config.Config) (*System, error) {
 		return nil, err
 	}
 
-	s.initRouter()
 	s.initRPC()
 
 	if err := s.initDiscovery(); err != nil {
@@ -99,23 +93,8 @@ func (s *System) initDB() (err error) {
 	return nil
 }
 
-func (s *System) DB() *database.DB {
+func (s *System) DB() database.DB {
 	return s.db
-}
-
-func (s *System) initRouter() {
-	s.router = mux.NewRouter()
-	s.router.Use(handlers.RecoveryHandler(
-		handlers.RecoveryLogger(s.logger),
-		handlers.PrintRecoveryStack(true),
-	))
-	s.router.Use(handlers.CompressHandler)
-	s.router.HandleFunc("/healthz", web.HealthCheck).
-		Methods(http.MethodGet, http.MethodHead)
-}
-
-func (s *System) Router() *mux.Router {
-	return s.router
 }
 
 func (s *System) initRPC() {

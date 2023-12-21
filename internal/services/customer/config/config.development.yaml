@@ -3,11 +3,11 @@ Environment: development
 
 web:
   Host: 127.0.0.1
-  Port: 20000
+  Port: 30001
 
 Rpc:
   Host: 127.0.0.1
-  Port: 30000
+  Port: 30002
 
 Mysql:
   Host: 127.0.0.1

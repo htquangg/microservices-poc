@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package storepb;
+
+option go_package = ",/;proto";
+
+service StoreService {
+  rpc AddProduct(AddProductRequest) returns (AddProductResponse) {};
+}
+
+message Product {
+  string id = 1;
+  string store_id = 2;
+  string name = 3;
+  string description = 4;
+  string sku = 5;
+  double price = 6;
+}
+
+message AddProductRequest {
+  string store_id = 1;
+  string name = 2;
+  string description = 3;
+  string sku = 4;
+  double price = 5;
+}
+message AddProductResponse {
+  string id = 1;
+}

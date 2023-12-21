@@ -12,6 +12,8 @@ type (
 	Entity interface {
 		IDer
 		EntityNamer
+		IDSetter
+		NameSetter
 	}
 
 	entity struct {
@@ -35,4 +37,16 @@ func (e entity) ID() string {
 
 func (e entity) EntityName() string {
 	return e.name
+}
+
+func (e entity) Equals(other IDer) bool {
+	return e.id == other.ID()
+}
+
+func (e *entity) SetID(id string) {
+	e.id = id
+}
+
+func (e *entity) SetName(name string) {
+	e.name = name
 }

@@ -13,15 +13,15 @@ import (
 	mysql_driver "github.com/go-sql-driver/mysql"
 )
 
-const INBOX_TABLE = "inboxes"
+const InboxTable = "inboxes"
 
 type InboxStore struct {
-	db *database.DB
+	db database.DB
 }
 
 var _ tm.InboxStore = (*InboxStore)(nil)
 
-func NewInboxStore(db *database.DB) InboxStore {
+func NewInboxStore(db database.DB) InboxStore {
 	return InboxStore{
 		db: db,
 	}
@@ -60,5 +60,5 @@ func (s InboxStore) Save(ctx context.Context, msg am.IncomingMessage) error {
 }
 
 func (s InboxStore) table(query string) string {
-	return fmt.Sprintf(query, INBOX_TABLE)
+	return fmt.Sprintf(query, InboxTable)
 }

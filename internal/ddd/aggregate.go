@@ -14,12 +14,15 @@ type (
 	Eventer interface {
 		AddEvent(name string, payload EventPayload, options ...EventOption)
 		Events() []AggregateEvent
+		ClearEvents()
 	}
 
 	Aggregate interface {
 		IDer
 		AggregateNamer
 		Eventer
+		IDSetter
+		NameSetter
 	}
 
 	AggregateEvent interface {
@@ -54,6 +57,10 @@ func (a aggregate) AggregateName() string {
 
 func (a aggregate) Events() []AggregateEvent {
 	return a.events
+}
+
+func (a *aggregate) ClearEvents() {
+	a.events = []AggregateEvent{}
 }
 
 func (a *aggregate) AddEvent(name string, payload EventPayload, options ...EventOption) {

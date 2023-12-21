@@ -3,7 +3,7 @@ Environment: development
 
 Rpc:
   Host: 127.0.0.1
-  Port: 31000
+  Port: 31002
 
 Mysql:
   Host: 127.0.0.1

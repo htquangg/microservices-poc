@@ -13,7 +13,7 @@ import (
 
 type Service interface {
 	Config() *config.Config
-	DB() *database.DB
+	DB() database.DB
 	Router() *mux.Router
 	RPC() *grpc.Server
 	Discovery() discovery.Registry

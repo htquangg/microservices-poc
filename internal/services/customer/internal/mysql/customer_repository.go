@@ -24,10 +24,10 @@ func (customer) TableName() string {
 var _ domain.CustomerRepository = (*CustomerRepository)(nil)
 
 type CustomerRepository struct {
-	db *database.DB
+	db database.DB
 }
 
-func NewCustomerRepository(db *database.DB) CustomerRepository {
+func NewCustomerRepository(db database.DB) CustomerRepository {
 	return CustomerRepository{
 		db: db,
 	}

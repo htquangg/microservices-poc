@@ -17,14 +17,14 @@ type customerServer struct {
 	pb_customer.UnimplementedCustomerServiceServer
 
 	c  di.Container
-	db *database.DB
+	db database.DB
 
 	registerCustomer grpc_transport.Handler
 }
 
 func registerCustomerServer(
 	c di.Container,
-	db *database.DB,
+	db database.DB,
 	registrar grpc.ServiceRegistrar,
 ) error {
 	endpoints := makeCustomerEndpoints(c)

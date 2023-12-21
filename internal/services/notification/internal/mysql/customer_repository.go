@@ -11,12 +11,12 @@ import (
 )
 
 type CustomerRepository struct {
-	db *database.DB
+	db database.DB
 }
 
 var _ application.CustomerRepository = (*CustomerRepository)(nil)
 
-func NewCustomerRepository(db *database.DB) CustomerRepository {
+func NewCustomerRepository(db database.DB) CustomerRepository {
 	return CustomerRepository{
 		db: db,
 	}

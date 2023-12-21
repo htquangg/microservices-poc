@@ -12,7 +12,7 @@ import (
 
 type Service interface {
 	Config() *config.Config
-	DB() *database.DB
+	DB() database.DB
 	RPC() *grpc.Server
 	Discovery() discovery.Registry
 	Logger() logger.Logger

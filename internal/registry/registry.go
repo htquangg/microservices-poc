@@ -11,8 +11,8 @@ type (
 	Deserializer func(d []byte, v interface{}) error
 
 	Registry interface {
-		Serializer(key string, v interface{}) ([]byte, error)
-		Deserializer(key string, data []byte, options ...BuildOption) (interface{}, error)
+		Serialize(key string, v interface{}) ([]byte, error)
+		Deserialize(key string, data []byte, options ...BuildOption) (interface{}, error)
 		Build(key string, options ...BuildOption) (interface{}, error)
 		register(key string, fn func() interface{}, s Serializer, d Deserializer, o []BuildOption) error
 	}
@@ -36,7 +36,7 @@ func New() *registry {
 	}
 }
 
-func (r *registry) Serializer(key string, v interface{}) ([]byte, error) {
+func (r *registry) Serialize(key string, v interface{}) ([]byte, error) {
 	reg, exists := r.registered[key]
 	if !exists {
 		return nil, UnregisteredKey(key)
@@ -45,7 +45,7 @@ func (r *registry) Serializer(key string, v interface{}) ([]byte, error) {
 	return reg.serializer(v)
 }
 
-func (r *registry) Deserializer(key string, data []byte, options ...BuildOption) (interface{}, error) {
+func (r *registry) Deserialize(key string, data []byte, options ...BuildOption) (interface{}, error) {
 	v, err := r.Build(key, options...)
 	if err != nil {
 		return nil, err

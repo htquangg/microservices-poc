@@ -2,7 +2,7 @@ package application
 
 import (
 	"github.com/htquangg/microservices-poc/internal/ddd"
-	"github.com/htquangg/microservices-poc/internal/services/customer/internal/application/command"
+	"github.com/htquangg/microservices-poc/internal/services/customer/internal/application/commands"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/domain"
 	"github.com/htquangg/microservices-poc/pkg/logger"
 )
@@ -14,7 +14,7 @@ type (
 	}
 
 	Commands struct {
-		RegisterCustomerHandler command.RegisterCustomerHandler
+		commands.RegisterCustomerHandler
 	}
 
 	Queries struct{}
@@ -27,7 +27,7 @@ func New(
 ) *Application {
 	return &Application{
 		Commands: Commands{
-			RegisterCustomerHandler: command.NewRegisterCustomerHandler(customerRepo, publisher, log),
+			RegisterCustomerHandler: commands.NewRegisterCustomerHandler(customerRepo, publisher, log),
 		},
 	}
 }
