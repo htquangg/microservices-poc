@@ -23,29 +23,29 @@ type (
 	AddProductHandler decorator.CommandHandler[AddProduct]
 
 	addProductHandler struct {
-		pruductRepo domain.ProductRepository
-		publisher   ddd.EventPublisher[ddd.Event]
-		log         logger.Logger
+		productESRepo domain.ProductESRepository
+		publisher     ddd.EventPublisher[ddd.Event]
+		log           logger.Logger
 	}
 )
 
 func NewAddProductHandler(
-	productRepo domain.ProductRepository,
+	productESRepo domain.ProductESRepository,
 	publisher ddd.EventPublisher[ddd.Event],
 	log logger.Logger,
 ) AddProductHandler {
 	return decorator.ApplyCommandDecorators[AddProduct](
 		&addProductHandler{
-			pruductRepo: productRepo,
-			publisher:   publisher,
-			log:         log,
+			productESRepo: productESRepo,
+			publisher:     publisher,
+			log:           log,
 		},
 		log,
 	)
 }
 
 func (h *addProductHandler) Handle(ctx context.Context, cmd AddProduct) error {
-	product, err := h.pruductRepo.Load(ctx, cmd.ID)
+	product, err := h.productESRepo.Load(ctx, cmd.ID)
 	if err != nil {
 		return errors.Wrap(err, "error adding product")
 	}
@@ -64,7 +64,7 @@ func (h *addProductHandler) Handle(ctx context.Context, cmd AddProduct) error {
 		return errors.Wrap(err, "initializing product")
 	}
 
-	err = h.pruductRepo.Save(ctx, product)
+	err = h.productESRepo.Save(ctx, product)
 	if err != nil {
 		return errors.Wrap(err, "error adding product")
 	}

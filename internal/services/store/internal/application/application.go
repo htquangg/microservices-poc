@@ -21,13 +21,13 @@ type (
 )
 
 func New(
-	productRepo domain.ProductRepository,
+	productESRepo domain.ProductESRepository,
 	publisher ddd.EventPublisher[ddd.Event],
 	log logger.Logger,
 ) *Application {
 	return &Application{
 		Commands: Commands{
-			AddProductHandler: commands.NewAddProductHandler(productRepo, publisher, log),
+			AddProductHandler: commands.NewAddProductHandler(productESRepo, publisher, log),
 		},
 	}
 }

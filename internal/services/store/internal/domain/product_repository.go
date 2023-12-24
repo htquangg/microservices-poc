@@ -1,10 +1,15 @@
 package domain
 
-import (
-	"context"
-)
+import "context"
 
 type ProductRepository interface {
-	Load(ctx context.Context, id string) (*Product, error)
-	Save(ctx context.Context, product *Product) error
+	AddProduct(
+		ctx context.Context,
+		id string,
+		storeID string,
+		name string,
+		description string,
+		sku string,
+		price float64,
+	) error
 }

@@ -38,9 +38,13 @@ func NewSnapshotStore(db database.DB, registry registry.Registry) es.AggregateSt
 }
 
 func (s SnapshotStore) Load(ctx context.Context, aggregate es.EventSourcedAggregate) error {
-	query := fmt.Sprintf(
-		"SELECT stream_version, snapshot_name, snapshot_data FROM %s WHERE stream_id = ? AND stream_name = ? LIMIT 1",
-		SnapshotTable,
+	query := s.table(
+		`
+		SELECT stream_version, snapshot_name, snapshot_data
+		FROM %s
+		WHERE stream_id = ? AND stream_name = ?
+		LIMIT 1
+	`,
 	)
 
 	snapshots, err := s.db.Engine(ctx).Query(query, aggregate.ID(), aggregate.AggregateName())
@@ -78,12 +82,15 @@ func (s SnapshotStore) Save(ctx context.Context, aggregate es.EventSourcedAggreg
 
 	query := s.table(
 		`
-		INSERT INTO snapshots (stream_id, stream_name, stream_version, snapshot_name, snapshot_data) VALUES (?, ?, ?, ?, ?) AS new
-		ON DUPLICATE KEY UPDATE stream_id=new.stream_id,
-														stream_name=stream_name,
-														stream_version=new.stream_version,
-														snapshot_name=new.snapshot_name,
-														snapshot_data=new.snapshot_data
+		INSERT INTO %s (stream_id, stream_name, stream_version, snapshot_name, snapshot_data)
+		VALUES (?, ?, ?, ?, ?) AS new
+		ON DUPLICATE KEY
+		UPDATE
+			stream_id=new.stream_id,
+			stream_name=new.stream_name,
+			stream_version=new.stream_version,
+			snapshot_name=new.snapshot_name,
+			snapshot_data=new.snapshot_data
 		`,
 	)
 
@@ -112,10 +119,6 @@ func (s SnapshotStore) Save(ctx context.Context, aggregate es.EventSourcedAggreg
 	return err
 }
 
-func (s SnapshotStore) table(query string) string {
-	return fmt.Sprintf(query, SnapshotTable)
-}
-
 func (s SnapshotStore) shouldSnapshot(aggregate es.EventSourcedAggregate) bool {
 	pendingVersion := aggregate.PendingVersion()
 	pendingChanges := len(aggregate.Events())
@@ -123,4 +126,8 @@ func (s SnapshotStore) shouldSnapshot(aggregate es.EventSourcedAggregate) bool {
 	return pendingVersion >= MaxChanges && ((pendingChanges >= MaxChanges) ||
 		(pendingChanges%MaxChanges < pendingChanges) ||
 		(pendingChanges%MaxChanges == 0))
+}
+
+func (s SnapshotStore) table(query string) string {
+	return fmt.Sprintf(query, SnapshotTable)
 }

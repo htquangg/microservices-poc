@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	CustomerAggregateChannel = "mall.stores.events.Store"
+	ProductAggregateChannel = "mall.stores.events.Product"
 
 	ProductAddedEvent = "storesapi.ProductAdded"
 )

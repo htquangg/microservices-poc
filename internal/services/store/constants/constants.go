@@ -14,5 +14,8 @@ const (
 	ApplicationKey         = "app"
 	DomainEventHandlersKey = "domainEventHandlers"
 
-	ProductRepoKey = "productRepo"
+	ProductHandlersKey = "productHandlers"
+
+	ProductESRepoKey = "productESRepo"
+	ProductRepoKey   = "productRepo"
 )

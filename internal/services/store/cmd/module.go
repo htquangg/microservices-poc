@@ -3,8 +3,10 @@ package cmd
 import (
 	"context"
 
+	"github.com/htquangg/microservices-poc/internal/am"
 	"github.com/htquangg/microservices-poc/internal/ddd"
 	"github.com/htquangg/microservices-poc/internal/es"
+	"github.com/htquangg/microservices-poc/internal/kafka"
 	mysql_internal "github.com/htquangg/microservices-poc/internal/mysql"
 	"github.com/htquangg/microservices-poc/internal/registry"
 	"github.com/htquangg/microservices-poc/internal/registry/serdes"
@@ -12,13 +14,17 @@ import (
 	"github.com/htquangg/microservices-poc/internal/services/store/internal/application"
 	"github.com/htquangg/microservices-poc/internal/services/store/internal/domain"
 	"github.com/htquangg/microservices-poc/internal/services/store/internal/grpc"
+	"github.com/htquangg/microservices-poc/internal/services/store/internal/handlers"
+	"github.com/htquangg/microservices-poc/internal/services/store/internal/mysql"
 	"github.com/htquangg/microservices-poc/internal/services/store/internal/system"
 	pb_store "github.com/htquangg/microservices-poc/internal/services/store/proto"
+	"github.com/htquangg/microservices-poc/internal/tm"
+	"github.com/htquangg/microservices-poc/pkg/logger"
 
 	"github.com/htquangg/di/v2"
 )
 
-func startUp(_ context.Context, svc system.Service) error {
+func startUp(ctx context.Context, svc system.Service) error {
 	builder, err := di.NewBuilder()
 	if err != nil {
 		return err
@@ -63,13 +69,43 @@ func startUp(_ context.Context, svc system.Service) error {
 		},
 	})
 	builder.Add(di.Def{
-		Name:  constants.ProductRepoKey,
+		Name:  constants.ProductESRepoKey,
 		Scope: di.Request,
 		Build: func(c di.Container) (interface{}, error) {
-			return es.NewAggregateRepository[*domain.Product](
+			return es.NewAggregateRepository[*domain.ProductES](
 				domain.ProductAggregate,
 				c.Get(constants.RegistryKey).(registry.Registry),
 				c.Get(constants.AggregateStoreKey).(es.AggregateStore),
+			), nil
+		},
+	})
+	builder.Add(di.Def{
+		Name:  constants.ProductRepoKey,
+		Scope: di.Request,
+		Build: func(c di.Container) (interface{}, error) {
+			return mysql.NewProductRepository(svc.DB()), nil
+		},
+	})
+	kafkaProducer := kafka.NewProducer(svc.Config().Kafka.Brokers, svc.Logger())
+	go func(ctx context.Context) error {
+		<-ctx.Done()
+		return kafkaProducer.Close()
+	}(ctx)
+	builder.Add(di.Def{
+		Name:  constants.MessagePublisherKey,
+		Scope: di.Request,
+		Build: func(_ di.Container) (interface{}, error) {
+			outboxRepo := mysql_internal.NewOutboxStore(svc.DB())
+			return am.NewMessagePublisher(kafkaProducer, tm.OutboxPublisher(outboxRepo)), nil
+		},
+	})
+	builder.Add(di.Def{
+		Name:  constants.EventPublisherKey,
+		Scope: di.Request,
+		Build: func(c di.Container) (interface{}, error) {
+			return am.NewEventPublisher(
+				c.Get(constants.RegistryKey).(registry.Registry),
+				c.Get(constants.MessagePublisherKey).(am.MessagePublisher),
 			), nil
 		},
 	})
@@ -81,12 +117,34 @@ func startUp(_ context.Context, svc system.Service) error {
 		Build: func(c di.Container) (interface{}, error) {
 			domainDispatcher := c.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.Event])
 			return application.New(
-				c.Get(constants.ProductRepoKey).(domain.ProductRepository),
-				domainDispatcher,
-				svc.Logger(),
-			), nil
+					c.Get(constants.ProductESRepoKey).(domain.ProductESRepository),
+					domainDispatcher,
+					svc.Logger(),
+				),
+				nil
 		},
 	})
+	builder.Add(di.Def{
+		Name:  constants.ProductHandlersKey,
+		Scope: di.Request,
+		Build: func(c di.Container) (interface{}, error) {
+			return handlers.NewProductHandlers(
+					c.Get(constants.ProductRepoKey).(domain.ProductRepository),
+				),
+				nil
+		},
+	})
+	builder.Add(di.Def{
+		Name:  constants.DomainEventHandlersKey,
+		Scope: di.Request,
+		Build: func(c di.Container) (interface{}, error) {
+			return handlers.NewDomainEventHandlers(
+					c.Get(constants.EventPublisherKey).(am.EventPublisher),
+				),
+				nil
+		},
+	})
+	outboxProcessor := tm.NewOutboxProcessor(kafkaProducer, mysql_internal.NewOutboxStore(svc.DB()))
 
 	container := builder.Build()
 
@@ -94,6 +152,9 @@ func startUp(_ context.Context, svc system.Service) error {
 	if err := grpc.RegisterServer(container, svc.DB(), svc.RPC()); err != nil {
 		return err
 	}
+	handlers.RegisterProductHandlers(container)
+	handlers.RegisterDomainEventHandlers(container)
+	startOutboxProcessor(ctx, outboxProcessor, svc.Logger())
 
 	return nil
 }
@@ -101,9 +162,9 @@ func startUp(_ context.Context, svc system.Service) error {
 func registrations(reg registry.Registry) (err error) {
 	serde := serdes.NewJsonSerde(reg)
 
-	// Product
-	if err = serde.Register(domain.Product{}, func(v any) error {
-		store := v.(*domain.Product)
+	// product
+	if err = serde.Register(domain.ProductES{}, func(v any) error {
+		store := v.(*domain.ProductES)
 		store.Aggregate = es.NewAggregate("", domain.ProductAggregate)
 		return nil
 	}); err != nil {
@@ -121,4 +182,13 @@ func registrations(reg registry.Registry) (err error) {
 	}
 
 	return
+}
+
+func startOutboxProcessor(ctx context.Context, outboxProcessor tm.OutboxProcessor, log logger.Logger) {
+	go func() {
+		err := outboxProcessor.Start(ctx)
+		if err != nil {
+			log.Err("store outbox processor encountered an error", err)
+		}
+	}()
 }

@@ -45,7 +45,12 @@ func NewEventStore(db database.DB, registry registry.Registry) EventStore {
 
 func (s EventStore) Load(ctx context.Context, aggregate es.EventSourcedAggregate) error {
 	query := s.table(
-		"SELECT stream_version, event_id, event_name, event_data, occurred_at FROM %s WHERE stream_id = ? AND stream_name = ? AND stream_version > ? ORDER BY stream_version ASC",
+		`
+		SELECT stream_version, event_id, event_name, event_data, occurred_at
+		FROM %s
+		WHERE stream_id = ? AND stream_name = ? AND stream_version > ?
+		ORDER BY stream_version ASC
+	`,
 	)
 
 	events, err := s.db.Engine(ctx).Query(query, aggregate.ID(), aggregate.AggregateName(), aggregate.Version())

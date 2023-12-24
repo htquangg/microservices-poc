@@ -26,7 +26,7 @@ func NewDomainEventHandlers(publisher am.EventPublisher) ddd.EventHandler[ddd.Ag
 
 func RegisterDomainEventHandlers(container di.Container) {
 	handlers := ddd.EventHandlerFunc[ddd.AggregateEvent](func(ctx context.Context, event ddd.AggregateEvent) error {
-		domainHandlers := di.Get(ctx, (constants.DomainEventHandlersKey)).(ddd.EventHandler[ddd.AggregateEvent])
+		domainHandlers := di.Get(ctx, constants.DomainEventHandlersKey).(ddd.EventHandler[ddd.AggregateEvent])
 
 		return domainHandlers.HandleEvent(ctx, event)
 	})
@@ -56,11 +56,12 @@ func (h domainHandlers[T]) onCustomerRegistered(ctx context.Context, event ddd.A
 	return h.publisher.Publish(
 		ctx,
 		pb_customer.CustomerAggregateChannel,
-		ddd.NewEvent(pb_customer.CustomerRegisteredEvent, &pb_customer.CustomerRegistered{
-			Id:    payload.Customer.ID(),
-			Name:  payload.Customer.Name(),
-			Phone: payload.Customer.Phone(),
-			Email: payload.Customer.Email(),
-		}),
+		ddd.NewEvent(pb_customer.CustomerRegisteredEvent,
+			&pb_customer.CustomerRegistered{
+				Id:    payload.Customer.ID(),
+				Name:  payload.Customer.Name(),
+				Phone: payload.Customer.Phone(),
+				Email: payload.Customer.Email(),
+			}),
 	)
 }

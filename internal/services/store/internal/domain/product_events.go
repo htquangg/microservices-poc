@@ -1,7 +1,7 @@
 package domain
 
 const (
-	ProductAddEvent            = "stores.ProductAdded"
+	ProductAddedEvent          = "stores.ProductAdded"
 	ProductRebrandedEvent      = "stores.ProductRebranded"
 	ProductPriceIncreasedEvent = "stores.ProductPriceIncreased"
 	ProductPriceDecreasedEvent = "stores.ProductPriceDecreased"
@@ -18,5 +18,5 @@ type ProductAdded struct {
 
 // Key implements registry.Registerable
 func (ProductAdded) Key() string {
-	return ProductAddEvent
+	return ProductAddedEvent
 }
