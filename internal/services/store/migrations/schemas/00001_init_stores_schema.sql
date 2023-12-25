@@ -2,11 +2,20 @@
 -- +goose StatementBegin
 SELECT 'up SQL query';
 -- +goose StatementEnd
+CREATE TABLE IF NOT EXISTS stores
+(
+    id          BIGINT(20) PRIMARY KEY              NOT NULL,
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+
+    name        VARCHAR(64)                         NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS products
 (
     id          BIGINT(20) PRIMARY KEY              NOT NULL,
-    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_at  DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
 
     store_id    BIGINT(20)                          NOT NULL,
     name        VARCHAR(64)                         NOT NULL,
@@ -36,7 +45,7 @@ CREATE TABLE events
     event_id       BIGINT(20)                          NOT NULL,
     event_name     VARCHAR(512)                        NOT NULL,
     event_data     BLOB                                NOT NULL,
-    occurred_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    occurred_at    DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
     PRIMARY KEY (stream_id, stream_name, stream_version)
 );
 
@@ -47,7 +56,7 @@ CREATE TABLE snapshots
     stream_version int                                 NOT NULL,
     snapshot_name  VARCHAR(512)                        NOT NULL,
     snapshot_data  BLOB                                NOT NULL,
-    updated_at     TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at     DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
     PRIMARY KEY (stream_id, stream_name)
 );
 
@@ -65,3 +74,5 @@ DROP TABLE IF EXISTS outboxes;
 DROP INDEX idx_store_id ON products;
 
 DROP TABLE IF EXISTS products;
+
+DROP TABLE IF EXISTS stores;

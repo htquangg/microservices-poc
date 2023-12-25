@@ -6,8 +6,8 @@ SELECT 'up SQL query';
 CREATE TABLE IF NOT EXISTS customers
 (
     id         BIGINT(20) PRIMARY KEY              NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL,
 
     name       VARCHAR(64)                         NOT NULL,
     email      VARCHAR(64)                         NULL,
