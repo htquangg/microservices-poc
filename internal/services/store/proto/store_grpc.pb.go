@@ -19,13 +19,17 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	StoreService_AddProduct_FullMethodName = "/storepb.StoreService/AddProduct"
+	StoreService_CreateStore_FullMethodName  = "/storepb.StoreService/CreateStore"
+	StoreService_RebrandStore_FullMethodName = "/storepb.StoreService/RebrandStore"
+	StoreService_AddProduct_FullMethodName   = "/storepb.StoreService/AddProduct"
 )
 
 // StoreServiceClient is the client API for StoreService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type StoreServiceClient interface {
+	CreateStore(ctx context.Context, in *CreateStoreRequest, opts ...grpc.CallOption) (*CreateStoreResponse, error)
+	RebrandStore(ctx context.Context, in *RebrandStoreRequest, opts ...grpc.CallOption) (*RebrandStoreResponse, error)
 	AddProduct(ctx context.Context, in *AddProductRequest, opts ...grpc.CallOption) (*AddProductResponse, error)
 }
 
@@ -35,6 +39,24 @@ type storeServiceClient struct {
 
 func NewStoreServiceClient(cc grpc.ClientConnInterface) StoreServiceClient {
 	return &storeServiceClient{cc}
+}
+
+func (c *storeServiceClient) CreateStore(ctx context.Context, in *CreateStoreRequest, opts ...grpc.CallOption) (*CreateStoreResponse, error) {
+	out := new(CreateStoreResponse)
+	err := c.cc.Invoke(ctx, StoreService_CreateStore_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *storeServiceClient) RebrandStore(ctx context.Context, in *RebrandStoreRequest, opts ...grpc.CallOption) (*RebrandStoreResponse, error) {
+	out := new(RebrandStoreResponse)
+	err := c.cc.Invoke(ctx, StoreService_RebrandStore_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *storeServiceClient) AddProduct(ctx context.Context, in *AddProductRequest, opts ...grpc.CallOption) (*AddProductResponse, error) {
@@ -50,6 +72,8 @@ func (c *storeServiceClient) AddProduct(ctx context.Context, in *AddProductReque
 // All implementations must embed UnimplementedStoreServiceServer
 // for forward compatibility
 type StoreServiceServer interface {
+	CreateStore(context.Context, *CreateStoreRequest) (*CreateStoreResponse, error)
+	RebrandStore(context.Context, *RebrandStoreRequest) (*RebrandStoreResponse, error)
 	AddProduct(context.Context, *AddProductRequest) (*AddProductResponse, error)
 	mustEmbedUnimplementedStoreServiceServer()
 }
@@ -58,6 +82,12 @@ type StoreServiceServer interface {
 type UnimplementedStoreServiceServer struct {
 }
 
+func (UnimplementedStoreServiceServer) CreateStore(context.Context, *CreateStoreRequest) (*CreateStoreResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateStore not implemented")
+}
+func (UnimplementedStoreServiceServer) RebrandStore(context.Context, *RebrandStoreRequest) (*RebrandStoreResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RebrandStore not implemented")
+}
 func (UnimplementedStoreServiceServer) AddProduct(context.Context, *AddProductRequest) (*AddProductResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method AddProduct not implemented")
 }
@@ -72,6 +102,42 @@ type UnsafeStoreServiceServer interface {
 
 func RegisterStoreServiceServer(s grpc.ServiceRegistrar, srv StoreServiceServer) {
 	s.RegisterService(&StoreService_ServiceDesc, srv)
+}
+
+func _StoreService_CreateStore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateStoreRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StoreServiceServer).CreateStore(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StoreService_CreateStore_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StoreServiceServer).CreateStore(ctx, req.(*CreateStoreRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StoreService_RebrandStore_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RebrandStoreRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StoreServiceServer).RebrandStore(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StoreService_RebrandStore_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StoreServiceServer).RebrandStore(ctx, req.(*RebrandStoreRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _StoreService_AddProduct_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -99,6 +165,14 @@ var StoreService_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "storepb.StoreService",
 	HandlerType: (*StoreServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "CreateStore",
+			Handler:    _StoreService_CreateStore_Handler,
+		},
+		{
+			MethodName: "RebrandStore",
+			Handler:    _StoreService_RebrandStore_Handler,
+		},
 		{
 			MethodName: "AddProduct",
 			Handler:    _StoreService_AddProduct_Handler,

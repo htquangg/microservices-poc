@@ -166,9 +166,9 @@ func (s *System) WaitForWeb(ctx context.Context) error {
 	group, gCtx := errgroup.WithContext(ctx)
 	group.Go(func() error {
 		s.logger.Infof(
-			"%s web server is listening on port: %d",
+			"%s web server is listening on port: %s",
 			s.cfg.Name,
-			s.cfg.Web.Port,
+			s.cfg.Web.Address(),
 		)
 		defer s.logger.Infof("%s web server shutdown", s.cfg.Name)
 		if err := webServer.ListenAndServe(); err != nil &&
@@ -207,9 +207,9 @@ func (s *System) WaitForRPC(ctx context.Context) error {
 	group, gCtx := errgroup.WithContext(ctx)
 	group.Go(func() error {
 		s.logger.Infof(
-			"%s rpc server is listening on port: %d",
+			"%s rpc server is listening on port: %s",
 			s.cfg.Name,
-			s.cfg.Rpc.Port,
+			s.cfg.Rpc.Address(),
 		)
 		defer s.logger.Infof("%s rpc server shutdown", s.cfg.Name)
 		if err := s.RPC().Serve(listener); err != nil &&

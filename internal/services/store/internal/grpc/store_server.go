@@ -19,7 +19,9 @@ type storeServer struct {
 	c  di.Container
 	db database.DB
 
-	addProduct grpc_transport.Handler
+	createStore  grpc_transport.Handler
+	rebrandStore grpc_transport.Handler
+	addProduct   grpc_transport.Handler
 }
 
 func registerStoreServer(
@@ -32,6 +34,16 @@ func registerStoreServer(
 	pb_store.RegisterStoreServiceServer(registrar, storeServer{
 		c:  c,
 		db: db,
+		createStore: grpc_transport.NewServer(
+			endpoints.createStoreEndpoint,
+			decodeCreateStoreRequest,
+			encodeCreateStoreResponse,
+		),
+		rebrandStore: grpc_transport.NewServer(
+			endpoints.rebrandStoreEndpoint,
+			decodeRebrandStoreRequest,
+			encodeRebrandStoreResponse,
+		),
 		addProduct: grpc_transport.NewServer(
 			endpoints.registerCustomerEndpoint,
 			decodeAddProductRequest,
@@ -59,4 +71,42 @@ func (s storeServer) AddProduct(
 	}
 
 	return resp.(*pb_store.AddProductResponse), nil
+}
+
+func (s storeServer) CreateStore(
+	ctx context.Context,
+	request *pb_store.CreateStoreRequest,
+) (*pb_store.CreateStoreResponse, error) {
+	ctx = s.c.Scoped(ctx)
+
+	var resp interface{}
+
+	err := s.db.WithTx(ctx, func(ctx context.Context) (err error) {
+		_, resp, err = s.createStore.ServeGRPC(ctx, request)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb_store.CreateStoreResponse), nil
+}
+
+func (s storeServer) RebrandStore(
+	ctx context.Context,
+	request *pb_store.RebrandStoreRequest,
+) (*pb_store.RebrandStoreResponse, error) {
+	ctx = s.c.Scoped(ctx)
+
+	var resp interface{}
+
+	err := s.db.WithTx(ctx, func(ctx context.Context) (err error) {
+		_, resp, err = s.rebrandStore.ServeGRPC(ctx, request)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb_store.RebrandStoreResponse), nil
 }

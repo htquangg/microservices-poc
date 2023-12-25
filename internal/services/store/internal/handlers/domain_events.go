@@ -34,13 +34,21 @@ func RegisterDomainEventHandlers(container di.Container) {
 }
 
 func registerDomainEventHanders(subscriber ddd.EventSubscriber[ddd.Event], handlers ddd.EventHandler[ddd.Event]) {
-	subscriber.Subscribe(handlers, domain.ProductAddedEvent)
+	subscriber.Subscribe(handlers,
+		domain.StoreCreatedEvent,
+		domain.StoreRebrandedEvent,
+		domain.ProductAddedEvent,
+	)
 }
 
 var _ ddd.EventHandler[ddd.Event] = (*domainHanlders[ddd.Event])(nil)
 
 func (h domainHanlders[T]) HandleEvent(ctx context.Context, event T) error {
 	switch event.EventName() {
+	case domain.StoreCreatedEvent:
+		return h.onStoreCreated(ctx, event)
+	case domain.StoreRebrandedEvent:
+		return h.onStoreRebranded(ctx, event)
 	case domain.ProductAddedEvent:
 		return h.onProductAdded(ctx, event)
 	}
@@ -48,19 +56,47 @@ func (h domainHanlders[T]) HandleEvent(ctx context.Context, event T) error {
 	return nil
 }
 
+func (h domainHanlders[T]) onStoreCreated(ctx context.Context, event T) error {
+	product := event.Payload().(*domain.StoreES)
+	return h.publisher.Publish(
+		ctx,
+		pb_store.StoreAggregateChannel,
+		ddd.NewEvent(pb_store.StoreCreatedEvent,
+			&pb_store.StoreCreated{
+				Id:   product.ID(),
+				Name: product.Name(),
+			},
+		),
+	)
+}
+
+func (h domainHanlders[T]) onStoreRebranded(ctx context.Context, event T) error {
+	product := event.Payload().(*domain.StoreES)
+	return h.publisher.Publish(
+		ctx,
+		pb_store.StoreAggregateChannel,
+		ddd.NewEvent(pb_store.StoreRebrandedEvent,
+			&pb_store.StoreRebranded{
+				Id:   product.ID(),
+				Name: product.Name(),
+			},
+		),
+	)
+}
+
 func (h domainHanlders[T]) onProductAdded(ctx context.Context, event T) error {
-	product := event.Payload().(*domain.ProductES)
+	payload := event.Payload().(*domain.ProductES)
 	return h.publisher.Publish(
 		ctx,
 		pb_store.ProductAggregateChannel,
 		ddd.NewEvent(pb_store.ProductAddedEvent,
 			&pb_store.ProductAdded{
-				Id:          product.ID(),
-				StoreId:     product.StoreID(),
-				Name:        product.Name(),
-				Description: product.Description(),
-				Sku:         product.SKU(),
-				Price:       product.Price(),
+				Id:          payload.ID(),
+				StoreId:     payload.StoreID(),
+				Name:        payload.Name(),
+				Description: payload.Description(),
+				Sku:         payload.SKU(),
+				Price:       payload.Price(),
 			},
 		),
 	)

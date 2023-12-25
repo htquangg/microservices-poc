@@ -3,6 +3,7 @@ package domain
 import (
 	"github.com/htquangg/microservices-poc/internal/ddd"
 	"github.com/htquangg/microservices-poc/internal/es"
+
 	"github.com/stackus/errors"
 )
 
@@ -27,6 +28,11 @@ type ProductES struct {
 	description string
 	sku         string
 	price       float64
+}
+
+// Key implements registry.Registerable
+func (ProductES) Key() string {
+	return ProductAggregate
 }
 
 var _ es.EventSourcedAggregate = (*ProductES)(nil)
@@ -83,11 +89,6 @@ func (p ProductES) SKU() string {
 
 func (p ProductES) Price() float64 {
 	return p.price
-}
-
-// Key implements registry.Registerable
-func (ProductES) Key() string {
-	return ProductAggregate
 }
 
 func (p *ProductES) ApplyEvent(event ddd.Event) error {

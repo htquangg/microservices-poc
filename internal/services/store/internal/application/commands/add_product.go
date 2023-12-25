@@ -47,10 +47,8 @@ func NewAddProductHandler(
 func (h *addProductHandler) Handle(ctx context.Context, cmd AddProduct) error {
 	product, err := h.productESRepo.Load(ctx, cmd.ID)
 	if err != nil {
-		return errors.Wrap(err, "error adding product")
+		return errors.Wrap(err, "error loading product")
 	}
-
-	product.Price()
 
 	event, err := product.Init(
 		cmd.ID,

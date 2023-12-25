@@ -14,6 +14,8 @@ type (
 	}
 
 	Commands struct {
+		commands.CreateStoreHandler
+		commands.RebrandStoreHandler
 		commands.AddProductHandler
 	}
 
@@ -21,13 +23,16 @@ type (
 )
 
 func New(
+	storeESRepo domain.StoreESRepository,
 	productESRepo domain.ProductESRepository,
 	publisher ddd.EventPublisher[ddd.Event],
 	log logger.Logger,
 ) *Application {
 	return &Application{
 		Commands: Commands{
-			AddProductHandler: commands.NewAddProductHandler(productESRepo, publisher, log),
+			CreateStoreHandler:  commands.NewCreateStoreHandler(storeESRepo, publisher, log),
+			RebrandStoreHandler: commands.NewRebrandStoreHandler(storeESRepo, publisher, log),
+			AddProductHandler:   commands.NewAddProductHandler(productESRepo, publisher, log),
 		},
 	}
 }

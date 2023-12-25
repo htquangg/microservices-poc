@@ -48,14 +48,14 @@ func (h productHandlers[T]) HandleEvent(ctx context.Context, event T) error {
 }
 
 func (h productHandlers[T]) onProductAdded(ctx context.Context, event ddd.Event) error {
-	product := event.Payload().(*domain.ProductES)
+	payload := event.Payload().(*domain.ProductES)
 	return h.productRepo.AddProduct(
 		ctx,
-		product.ID(),
-		product.StoreID(),
-		product.Name(),
-		product.Description(),
-		product.SKU(),
-		product.Price(),
+		payload.ID(),
+		payload.StoreID(),
+		payload.Name(),
+		payload.Description(),
+		payload.SKU(),
+		payload.Price(),
 	)
 }

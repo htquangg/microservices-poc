@@ -69,11 +69,18 @@ func startUp(ctx context.Context, svc system.Service) error {
 		},
 	})
 	builder.Add(di.Def{
-		Name:  constants.ProductESRepoKey,
+		Name:  constants.StoreRepoKey,
 		Scope: di.Request,
 		Build: func(c di.Container) (interface{}, error) {
-			return es.NewAggregateRepository[*domain.ProductES](
-				domain.ProductAggregate,
+			return mysql.NewStoreRepository(svc.DB()), nil
+		},
+	})
+	builder.Add(di.Def{
+		Name:  constants.StoreESRepoKey,
+		Scope: di.Request,
+		Build: func(c di.Container) (interface{}, error) {
+			return es.NewAggregateRepository[*domain.StoreES](
+				domain.StoreAggregate,
 				c.Get(constants.RegistryKey).(registry.Registry),
 				c.Get(constants.AggregateStoreKey).(es.AggregateStore),
 			), nil
@@ -84,6 +91,17 @@ func startUp(ctx context.Context, svc system.Service) error {
 		Scope: di.Request,
 		Build: func(c di.Container) (interface{}, error) {
 			return mysql.NewProductRepository(svc.DB()), nil
+		},
+	})
+	builder.Add(di.Def{
+		Name:  constants.ProductESRepoKey,
+		Scope: di.Request,
+		Build: func(c di.Container) (interface{}, error) {
+			return es.NewAggregateRepository[*domain.ProductES](
+				domain.ProductAggregate,
+				c.Get(constants.RegistryKey).(registry.Registry),
+				c.Get(constants.AggregateStoreKey).(es.AggregateStore),
+			), nil
 		},
 	})
 	kafkaProducer := kafka.NewProducer(svc.Config().Kafka.Brokers, svc.Logger())
@@ -117,9 +135,20 @@ func startUp(ctx context.Context, svc system.Service) error {
 		Build: func(c di.Container) (interface{}, error) {
 			domainDispatcher := c.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.Event])
 			return application.New(
+					c.Get(constants.StoreESRepoKey).(domain.StoreESRepository),
 					c.Get(constants.ProductESRepoKey).(domain.ProductESRepository),
 					domainDispatcher,
 					svc.Logger(),
+				),
+				nil
+		},
+	})
+	builder.Add(di.Def{
+		Name:  constants.StoreHandlersKey,
+		Scope: di.Request,
+		Build: func(c di.Container) (interface{}, error) {
+			return handlers.NewStoreHandlers(
+					c.Get(constants.StoreRepoKey).(domain.StoreRepository),
 				),
 				nil
 		},
@@ -152,8 +181,9 @@ func startUp(ctx context.Context, svc system.Service) error {
 	if err := grpc.RegisterServer(container, svc.DB(), svc.RPC()); err != nil {
 		return err
 	}
-	handlers.RegisterProductHandlers(container)
 	handlers.RegisterDomainEventHandlers(container)
+	handlers.RegisterStoreHandlers(container)
+	handlers.RegisterProductHandlers(container)
 	startOutboxProcessor(ctx, outboxProcessor, svc.Logger())
 
 	return nil
@@ -161,6 +191,28 @@ func startUp(ctx context.Context, svc system.Service) error {
 
 func registrations(reg registry.Registry) (err error) {
 	serde := serdes.NewJsonSerde(reg)
+
+	// store
+	if err := serde.Register(domain.StoreES{}, func(v any) error {
+		store := v.(*domain.StoreES)
+		store.Aggregate = es.NewAggregate("", domain.StoreAggregate)
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	// store events
+	if err = serde.Register(domain.StoreCreated{}); err != nil {
+		return
+	}
+	if err = serde.Register(domain.StoreRebranded{}); err != nil {
+		return
+	}
+
+	// store snapshots
+	if err = serde.RegisterKey(domain.StoreV1{}.SnapshotName(), domain.StoreV1{}); err != nil {
+		return
+	}
 
 	// product
 	if err = serde.Register(domain.ProductES{}, func(v any) error {
