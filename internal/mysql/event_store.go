@@ -86,7 +86,6 @@ func (s EventStore) Load(ctx context.Context, aggregate es.EventSourcedAggregate
 		if err = es.LoadEvent(aggregate, event); err != nil {
 			return err
 		}
-
 	}
 
 	return nil
@@ -161,7 +160,7 @@ func (e aggregateEvent) AggregateName() string {
 }
 
 func (e aggregateEvent) AggregateVersion() int {
-	return e.aggregate.Version()
+	return e.version
 }
 
 func (s EventStore) table(query string) string {

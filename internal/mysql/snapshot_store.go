@@ -124,8 +124,8 @@ func (s SnapshotStore) shouldSnapshot(aggregate es.EventSourcedAggregate) bool {
 	pendingChanges := len(aggregate.Events())
 
 	return pendingVersion >= MaxChanges && ((pendingChanges >= MaxChanges) ||
-		(pendingChanges%MaxChanges < pendingChanges) ||
-		(pendingChanges%MaxChanges == 0))
+		(pendingVersion%MaxChanges < pendingChanges) ||
+		(pendingVersion%MaxChanges == 0))
 }
 
 func (s SnapshotStore) table(query string) string {
