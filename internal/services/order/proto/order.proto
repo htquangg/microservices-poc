@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package orderpb;
+
+option go_package = ",/;proto";
+
+service OrderService {
+
+}

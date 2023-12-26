@@ -33,6 +33,7 @@ and cloud native technologies.
 | 1   | customer service     | [http://127.0.0.1:30001](http://127.0.0.1:30001) | [127.0.0.1:30002](127.0.0.1:30002) |
 | 2   | notification service | [none](none)                                     | [127.0.0.1:31002](127.0.0.1:31002) |
 | 3   | store service        | [http://127.0.0.1:32001](http://127.0.0.1:32001) | [127.0.0.1:32002](127.0.0.1:32002) |
+| 4   | order service        | [http://127.0.0.1:33001](http://127.0.0.1:33001) | [127.0.0.1:33002](127.0.0.1:33002) |
 
 ## Starting project
 
