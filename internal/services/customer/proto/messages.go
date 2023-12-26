@@ -28,4 +28,6 @@ func Registrations(reg registry.Registry) error {
 	return nil
 }
 
-func (*CustomerRegistered) Key() string { return CustomerRegisteredEvent }
+func (*CustomerRegistered) Key() string {
+	return CustomerRegisteredEvent
+}
