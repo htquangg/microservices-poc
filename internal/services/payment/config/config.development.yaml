@@ -1,0 +1,33 @@
+Name: payment
+Environment: development
+
+Web:
+  Host: 127.0.0.1
+  Port: 34001
+
+Rpc:
+  Host: 127.0.0.1
+  Port: 34002
+
+Mysql:
+  Host: 127.0.0.1
+  Port: 3306
+  User: "root"
+  Password: "toor"
+  Schema: "dev-local-payment-001"
+  Charset: "utf8mb4"
+  AutoMigration: false
+  LogSQL: true
+  SslMode: false
+  MaxIdleConns: 1000
+  MaxOpenConns: 100
+  ConnMaxLifetime: 300
+
+Consul:
+  Host: 127.0.0.1
+  Port: 8500
+
+Kafka:
+  Brokers: [ "localhost:9092" ]
+  GroupID: api_gateway_consumer
+  InitTopics: true
