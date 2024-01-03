@@ -12,5 +12,9 @@ func RegisterServer(
 	db database.DB,
 	registrar grpc.ServiceRegistrar,
 ) error {
+	if err := registerBasketServer(c, db, registrar); err != nil {
+		return err
+	}
+
 	return nil
 }

@@ -13,6 +13,14 @@ func StringToInt64(str string) int64 {
 	return num
 }
 
+func StringToFloat64(str string) float64 {
+	num, err := strconv.ParseFloat(str, 64)
+	if err != nil {
+		return 0
+	}
+	return num
+}
+
 func StringToInt(str string) int {
 	num, err := strconv.Atoi(str)
 	if err != nil {
