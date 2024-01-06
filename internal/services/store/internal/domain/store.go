@@ -10,6 +10,6 @@ type Store struct {
 type StoreRepository interface {
 	AddStore(ctx context.Context, id string, name string) error
 	RenameStore(ctx context.Context, id string, name string) error
-	One(ctx context.Context, id string) (*Store, error)
-	All(ctx context.Context) ([]*Store, error)
+	FindOneByID(ctx context.Context, id string) (*Store, error)
+	FindAll(ctx context.Context) ([]*Store, error)
 }

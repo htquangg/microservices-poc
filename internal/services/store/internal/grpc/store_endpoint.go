@@ -30,6 +30,7 @@ func makeStoreEndpoints(c di.Container) storeEndpoints {
 // create store
 type (
 	createStoreRequest struct {
+		ID   string `json:"id"`
 		Name string `json:"name"`
 	}
 	createStoreResponse struct {
@@ -42,6 +43,7 @@ type (
 func decodeCreateStoreRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	req := grpcReq.(*pb_store.CreateStoreRequest)
 	return createStoreRequest{
+		ID:   uid.GetManager().ID(),
 		Name: req.GetName(),
 	}, nil
 }
@@ -57,16 +59,14 @@ func makeCreateStoreEndpoint(c di.Container) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		app := di.Get(ctx, constants.ApplicationKey).(*application.Application)
 
-		id := uid.GetManager().ID()
-
 		req := request.(createStoreRequest)
 		err := app.Commands.CreateStoreHandler.Handle(ctx, commands.CreateStore{
-			ID:   id,
+			ID:   req.ID,
 			Name: req.Name,
 		})
 
 		return createStoreResponse{
-			ID:  id,
+			ID:  req.ID,
 			Err: err,
 		}, nil
 	}

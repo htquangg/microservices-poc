@@ -25,6 +25,7 @@ func makeCustomerEndpoints(c di.Container) customerEndpoints {
 
 type (
 	registerCustomerRequest struct {
+		ID    string `json:"id"`
 		Name  string `json:"name"`
 		Phone string `json:"phone"`
 		Email string `json:"email"`
@@ -39,6 +40,7 @@ type (
 func decodeRegisterCustomerRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
 	req := grpcReq.(*pb_customer.RegisterCustomerRequest)
 	return registerCustomerRequest{
+		ID:    uid.GetManager().ID(),
 		Name:  req.GetName(),
 		Phone: req.GetPhone(),
 		Email: req.GetEmail(),
@@ -56,18 +58,16 @@ func makeRegisterCustomerEndpoint(c di.Container) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		app := di.Get(ctx, constants.ApplicationKey).(*application.Application)
 
-		id := uid.GetManager().ID()
-
 		req := request.(registerCustomerRequest)
 		err := app.Commands.RegisterCustomerHandler.Handle(ctx, commands.RegisterCustomer{
-			ID:    id,
+			ID:    req.ID,
 			Name:  req.Name,
 			Phone: req.Phone,
 			Email: req.Email,
 		})
 
 		return registerCustomerResponse{
-			ID:  id,
+			ID:  req.ID,
 			Err: err,
 		}, nil
 	}

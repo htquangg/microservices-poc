@@ -44,7 +44,7 @@ func (r StoreRepository) RenameStore(ctx context.Context, id string, name string
 	return err
 }
 
-func (r StoreRepository) One(ctx context.Context, id string) (*domain.Store, error) {
+func (r StoreRepository) FindOneByID(ctx context.Context, id string) (*domain.Store, error) {
 	query := r.table(`
 		SELECT id, name FROM %s
 		WHERE id = ?
@@ -65,7 +65,7 @@ func (r StoreRepository) One(ctx context.Context, id string) (*domain.Store, err
 	}, nil
 }
 
-func (r StoreRepository) All(ctx context.Context) ([]*domain.Store, error) {
+func (r StoreRepository) FindAll(ctx context.Context) ([]*domain.Store, error) {
 	panic("unimplemented")
 }
 

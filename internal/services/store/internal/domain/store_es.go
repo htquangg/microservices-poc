@@ -3,6 +3,7 @@ package domain
 import (
 	"github.com/htquangg/microservices-poc/internal/ddd"
 	"github.com/htquangg/microservices-poc/internal/es"
+
 	"github.com/stackus/errors"
 )
 
