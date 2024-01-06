@@ -13,8 +13,10 @@ import (
 	"github.com/htquangg/microservices-poc/internal/services/basket/internal/application"
 	"github.com/htquangg/microservices-poc/internal/services/basket/internal/domain"
 	"github.com/htquangg/microservices-poc/internal/services/basket/internal/grpc"
+	"github.com/htquangg/microservices-poc/internal/services/basket/internal/handlers"
 	"github.com/htquangg/microservices-poc/internal/services/basket/internal/mysql"
 	"github.com/htquangg/microservices-poc/internal/services/basket/internal/system"
+	pb_basket "github.com/htquangg/microservices-poc/internal/services/basket/proto"
 	"github.com/htquangg/microservices-poc/internal/tm"
 
 	"github.com/htquangg/di/v2"
@@ -33,6 +35,9 @@ func startUp(ctx context.Context, svc system.Service) error {
 		Build: func(_ di.Container) (interface{}, error) {
 			reg := registry.New()
 			if err := domain.Registrations(reg); err != nil {
+				return nil, err
+			}
+			if err := pb_basket.Registrations(reg); err != nil {
 				return nil, err
 			}
 
@@ -127,6 +132,13 @@ func startUp(ctx context.Context, svc system.Service) error {
 				nil
 		},
 	})
+	builder.Add(di.Def{
+		Name:  constants.DomainEventHandlersKey,
+		Scope: di.Request,
+		Build: func(c di.Container) (interface{}, error) {
+			return handlers.NewDomainEventHandlers(c.Get(constants.EventPublisherKey).(am.EventPublisher)), nil
+		},
+	})
 
 	container := builder.Build()
 
@@ -134,6 +146,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 	if err := grpc.RegisterServer(container, svc.DB(), svc.RPC()); err != nil {
 		return err
 	}
+	handlers.RegisterDomainEventHandlers(container)
 
 	return nil
 }

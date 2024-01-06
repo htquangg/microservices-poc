@@ -31,8 +31,38 @@ type BasketES struct {
 	es.Aggregate
 	customerID string
 	paymentID  string
-	items      map[string]*Item
+	items      Items
 	status     BasketStatus
+}
+
+// Key implements registry.Registrable
+func (BasketES) Key() string {
+	return BasketAggregate
+}
+
+func (s BasketES) CustomerID() string {
+	return s.customerID
+}
+
+func (s BasketES) PaymentID() string {
+	return s.paymentID
+}
+
+func (s BasketES) RawItems() Items {
+	return s.items
+}
+
+func (s BasketES) Items() []*Item {
+	items := make([]*Item, 0, len(s.items))
+	for _, item := range s.items {
+		items = append(items, item)
+	}
+
+	return items
+}
+
+func (s BasketES) Status() BasketStatus {
+	return s.status
 }
 
 func NewBasketES(id string) *BasketES {
@@ -136,11 +166,6 @@ func (b *BasketES) RemoveItem(product *Product, quantity int) error {
 	}
 
 	return nil
-}
-
-// Key implements registry.Registrable
-func (BasketES) Key() string {
-	return BasketAggregate
 }
 
 func (b *BasketES) ApplyEvent(event ddd.Event) error {

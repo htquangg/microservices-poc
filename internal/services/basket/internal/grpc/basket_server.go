@@ -19,7 +19,8 @@ type customerServer struct {
 	c  di.Container
 	db database.DB
 
-	startBasket grpc_transport.Handler
+	startBasket  grpc_transport.Handler
+	cancelBasket grpc_transport.Handler
 }
 
 func registerBasketServer(
@@ -36,6 +37,11 @@ func registerBasketServer(
 			endpoints.startBasketEndpoint,
 			decodeStartBasketRequest,
 			encodeStartBasketResponse,
+		),
+		cancelBasket: grpc_transport.NewServer(
+			endpoints.cancelBasketEndpoint,
+			decodeCancelBasketRequest,
+			encodeCancelBasketResponse,
 		),
 	})
 
@@ -59,4 +65,23 @@ func (s customerServer) StartBasket(
 	}
 
 	return resp.(*pb_basket.StartBasketResponse), nil
+}
+
+func (s customerServer) CancelBasket(
+	ctx context.Context,
+	request *pb_basket.CancelBasketRequest,
+) (*pb_basket.CancelBasketResponse, error) {
+	ctx = s.c.Scoped(ctx)
+
+	var resp interface{}
+
+	err := s.db.WithTx(ctx, func(ctx context.Context) (err error) {
+		_, resp, err = s.cancelBasket.ServeGRPC(ctx, request)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb_basket.CancelBasketResponse), nil
 }

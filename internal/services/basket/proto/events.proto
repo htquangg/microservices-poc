@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package basketpb;
+
+option go_package = ",/;proto";
+
+message BasketStarted {
+  string id = 1;
+  string customer_id = 2;
+}
+
+message BasketCancelled {
+  string id = 1;
+}
+
+message BasketCheckedOut {
+  message Item {
+    string store_id = 1;
+    string store_name = 2;
+    string product_id = 3;
+    string product_name = 4;
+    double price = 5;
+    int32 quantity = 6;
+  }
+  string id = 1;
+  string customer_id = 2;
+  string payment_id = 3;
+  repeated Item items = 4;
+}
