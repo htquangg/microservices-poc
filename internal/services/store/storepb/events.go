@@ -1,4 +1,4 @@
-package proto
+package storepb
 
 import (
 	"github.com/htquangg/microservices-poc/internal/registry"

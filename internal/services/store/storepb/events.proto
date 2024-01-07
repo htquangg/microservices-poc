@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package storepb;
 
-option go_package = ",/;proto";
-
 message StoreCreated {
   string id = 1;
   string name = 2;

@@ -6,7 +6,7 @@ import (
 	"github.com/htquangg/microservices-poc/internal/services/customer/constants"
 	"github.com/htquangg/microservices-poc/internal/services/store/internal/application"
 	"github.com/htquangg/microservices-poc/internal/services/store/internal/application/commands"
-	pb_store "github.com/htquangg/microservices-poc/internal/services/store/proto"
+	"github.com/htquangg/microservices-poc/internal/services/store/storepb"
 	"github.com/htquangg/microservices-poc/pkg/uid"
 
 	"github.com/go-kit/kit/endpoint"
@@ -41,7 +41,7 @@ type (
 )
 
 func decodeCreateStoreRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
-	req := grpcReq.(*pb_store.CreateStoreRequest)
+	req := grpcReq.(*storepb.CreateStoreRequest)
 	return createStoreRequest{
 		ID:   uid.GetManager().ID(),
 		Name: req.GetName(),
@@ -50,7 +50,7 @@ func decodeCreateStoreRequest(_ context.Context, grpcReq interface{}) (interface
 
 func encodeCreateStoreResponse(_ context.Context, response interface{}) (interface{}, error) {
 	resp := response.(createStoreResponse)
-	return &pb_store.CreateStoreResponse{
+	return &storepb.CreateStoreResponse{
 		Id: resp.ID,
 	}, resp.Err
 }
@@ -86,7 +86,7 @@ type (
 )
 
 func decodeRebrandStoreRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
-	req := grpcReq.(*pb_store.RebrandStoreRequest)
+	req := grpcReq.(*storepb.RebrandStoreRequest)
 	return rebrandStoreRequest{
 		ID:   req.Id,
 		Name: req.GetName(),
@@ -95,7 +95,7 @@ func decodeRebrandStoreRequest(_ context.Context, grpcReq interface{}) (interfac
 
 func encodeRebrandStoreResponse(_ context.Context, response interface{}) (interface{}, error) {
 	resp := response.(rebrandStoreResponse)
-	return &pb_store.RebrandStoreResponse{}, resp.Err
+	return &storepb.RebrandStoreResponse{}, resp.Err
 }
 
 func makeRebrandStoreEndpoint(c di.Container) endpoint.Endpoint {
@@ -131,7 +131,7 @@ type (
 )
 
 func decodeAddProductRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
-	req := grpcReq.(*pb_store.AddProductRequest)
+	req := grpcReq.(*storepb.AddProductRequest)
 	return addProductRequest{
 		StoreID:     req.GetStoreId(),
 		Name:        req.GetName(),
@@ -143,7 +143,7 @@ func decodeAddProductRequest(_ context.Context, grpcReq interface{}) (interface{
 
 func encodeAddProductResponse(_ context.Context, response interface{}) (interface{}, error) {
 	resp := response.(addProductResponse)
-	return &pb_store.AddProductResponse{
+	return &storepb.AddProductResponse{
 		Id: resp.ID,
 	}, resp.Err
 }

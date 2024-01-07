@@ -17,7 +17,7 @@ import (
 	"github.com/htquangg/microservices-poc/internal/services/store/internal/handlers"
 	"github.com/htquangg/microservices-poc/internal/services/store/internal/mysql"
 	"github.com/htquangg/microservices-poc/internal/services/store/internal/system"
-	pb_store "github.com/htquangg/microservices-poc/internal/services/store/proto"
+	"github.com/htquangg/microservices-poc/internal/services/store/storepb"
 	"github.com/htquangg/microservices-poc/internal/tm"
 	"github.com/htquangg/microservices-poc/pkg/logger"
 
@@ -39,7 +39,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 			if err := registrations(reg); err != nil {
 				return nil, err
 			}
-			if err := pb_store.Registrations(reg); err != nil {
+			if err := storepb.Registrations(reg); err != nil {
 				return nil, err
 			}
 			return reg, nil

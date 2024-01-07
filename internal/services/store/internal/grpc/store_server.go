@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 
-	pb_store "github.com/htquangg/microservices-poc/internal/services/store/proto"
+	"github.com/htquangg/microservices-poc/internal/services/store/storepb"
 	"github.com/htquangg/microservices-poc/pkg/database"
 
 	grpc_transport "github.com/go-kit/kit/transport/grpc"
@@ -11,10 +11,10 @@ import (
 	"google.golang.org/grpc"
 )
 
-var _ pb_store.StoreServiceServer = (*storeServer)(nil)
+var _ storepb.StoreServiceServer = (*storeServer)(nil)
 
 type storeServer struct {
-	pb_store.UnimplementedStoreServiceServer
+	storepb.UnimplementedStoreServiceServer
 
 	c  di.Container
 	db database.DB
@@ -31,7 +31,7 @@ func registerStoreServer(
 ) error {
 	endpoints := makeStoreEndpoints(c)
 
-	pb_store.RegisterStoreServiceServer(registrar, storeServer{
+	storepb.RegisterStoreServiceServer(registrar, storeServer{
 		c:  c,
 		db: db,
 		createStore: grpc_transport.NewServer(
@@ -56,8 +56,8 @@ func registerStoreServer(
 
 func (s storeServer) AddProduct(
 	ctx context.Context,
-	request *pb_store.AddProductRequest,
-) (*pb_store.AddProductResponse, error) {
+	request *storepb.AddProductRequest,
+) (*storepb.AddProductResponse, error) {
 	ctx = s.c.Scoped(ctx)
 
 	var resp interface{}
@@ -70,13 +70,13 @@ func (s storeServer) AddProduct(
 		return nil, err
 	}
 
-	return resp.(*pb_store.AddProductResponse), nil
+	return resp.(*storepb.AddProductResponse), nil
 }
 
 func (s storeServer) CreateStore(
 	ctx context.Context,
-	request *pb_store.CreateStoreRequest,
-) (*pb_store.CreateStoreResponse, error) {
+	request *storepb.CreateStoreRequest,
+) (*storepb.CreateStoreResponse, error) {
 	ctx = s.c.Scoped(ctx)
 
 	var resp interface{}
@@ -89,13 +89,13 @@ func (s storeServer) CreateStore(
 		return nil, err
 	}
 
-	return resp.(*pb_store.CreateStoreResponse), nil
+	return resp.(*storepb.CreateStoreResponse), nil
 }
 
 func (s storeServer) RebrandStore(
 	ctx context.Context,
-	request *pb_store.RebrandStoreRequest,
-) (*pb_store.RebrandStoreResponse, error) {
+	request *storepb.RebrandStoreRequest,
+) (*storepb.RebrandStoreResponse, error) {
 	ctx = s.c.Scoped(ctx)
 
 	var resp interface{}
@@ -108,5 +108,5 @@ func (s storeServer) RebrandStore(
 		return nil, err
 	}
 
-	return resp.(*pb_store.RebrandStoreResponse), nil
+	return resp.(*storepb.RebrandStoreResponse), nil
 }

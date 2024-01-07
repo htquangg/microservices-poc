@@ -8,7 +8,7 @@ import (
 	"github.com/htquangg/microservices-poc/internal/ddd"
 	"github.com/htquangg/microservices-poc/internal/services/store/constants"
 	"github.com/htquangg/microservices-poc/internal/services/store/internal/domain"
-	pb_store "github.com/htquangg/microservices-poc/internal/services/store/proto"
+	"github.com/htquangg/microservices-poc/internal/services/store/storepb"
 )
 
 type domainHanlders[T ddd.Event] struct {
@@ -60,9 +60,9 @@ func (h domainHanlders[T]) onStoreCreated(ctx context.Context, event T) error {
 	product := event.Payload().(*domain.StoreES)
 	return h.publisher.Publish(
 		ctx,
-		pb_store.StoreAggregateChannel,
-		ddd.NewEvent(pb_store.StoreCreatedEvent,
-			&pb_store.StoreCreated{
+		storepb.StoreAggregateChannel,
+		ddd.NewEvent(storepb.StoreCreatedEvent,
+			&storepb.StoreCreated{
 				Id:   product.ID(),
 				Name: product.Name(),
 			},
@@ -74,9 +74,9 @@ func (h domainHanlders[T]) onStoreRebranded(ctx context.Context, event T) error 
 	product := event.Payload().(*domain.StoreES)
 	return h.publisher.Publish(
 		ctx,
-		pb_store.StoreAggregateChannel,
-		ddd.NewEvent(pb_store.StoreRebrandedEvent,
-			&pb_store.StoreRebranded{
+		storepb.StoreAggregateChannel,
+		ddd.NewEvent(storepb.StoreRebrandedEvent,
+			&storepb.StoreRebranded{
 				Id:   product.ID(),
 				Name: product.Name(),
 			},
@@ -88,9 +88,9 @@ func (h domainHanlders[T]) onProductAdded(ctx context.Context, event T) error {
 	payload := event.Payload().(*domain.ProductES)
 	return h.publisher.Publish(
 		ctx,
-		pb_store.ProductAggregateChannel,
-		ddd.NewEvent(pb_store.ProductAddedEvent,
-			&pb_store.ProductAdded{
+		storepb.ProductAggregateChannel,
+		ddd.NewEvent(storepb.ProductAddedEvent,
+			&storepb.ProductAdded{
 				Id:          payload.ID(),
 				StoreId:     payload.StoreID(),
 				Name:        payload.Name(),
