@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 
-	pb_basket "github.com/htquangg/microservices-poc/internal/services/basket/proto"
+	"github.com/htquangg/microservices-poc/internal/services/basket/basketpb"
 	"github.com/htquangg/microservices-poc/pkg/database"
 
 	grpc_transport "github.com/go-kit/kit/transport/grpc"
@@ -11,10 +11,10 @@ import (
 	"google.golang.org/grpc"
 )
 
-var _ pb_basket.BasketServiceServer = (*customerServer)(nil)
+var _ basketpb.BasketServiceServer = (*customerServer)(nil)
 
 type customerServer struct {
-	pb_basket.UnimplementedBasketServiceServer
+	basketpb.UnimplementedBasketServiceServer
 
 	c  di.Container
 	db database.DB
@@ -30,7 +30,7 @@ func registerBasketServer(
 ) error {
 	endpoints := makeBasketEndpoints(c)
 
-	pb_basket.RegisterBasketServiceServer(registrar, customerServer{
+	basketpb.RegisterBasketServiceServer(registrar, customerServer{
 		c:  c,
 		db: db,
 		startBasket: grpc_transport.NewServer(
@@ -50,8 +50,8 @@ func registerBasketServer(
 
 func (s customerServer) StartBasket(
 	ctx context.Context,
-	request *pb_basket.StartBasketRequest,
-) (*pb_basket.StartBasketResponse, error) {
+	request *basketpb.StartBasketRequest,
+) (*basketpb.StartBasketResponse, error) {
 	ctx = s.c.Scoped(ctx)
 
 	var resp interface{}
@@ -64,13 +64,13 @@ func (s customerServer) StartBasket(
 		return nil, err
 	}
 
-	return resp.(*pb_basket.StartBasketResponse), nil
+	return resp.(*basketpb.StartBasketResponse), nil
 }
 
 func (s customerServer) CancelBasket(
 	ctx context.Context,
-	request *pb_basket.CancelBasketRequest,
-) (*pb_basket.CancelBasketResponse, error) {
+	request *basketpb.CancelBasketRequest,
+) (*basketpb.CancelBasketResponse, error) {
 	ctx = s.c.Scoped(ctx)
 
 	var resp interface{}
@@ -83,5 +83,5 @@ func (s customerServer) CancelBasket(
 		return nil, err
 	}
 
-	return resp.(*pb_basket.CancelBasketResponse), nil
+	return resp.(*basketpb.CancelBasketResponse), nil
 }

@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package basketpb;
 
-option go_package = ",/;proto";
-
 service BasketService {
   rpc StartBasket(StartBasketRequest) returns (StartBasketResponse) {};
   rpc CancelBasket(CancelBasketRequest) returns (CancelBasketResponse) {};

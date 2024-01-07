@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"time"
 
 	"github.com/htquangg/microservices-poc/internal/am"
 	"github.com/htquangg/microservices-poc/internal/ddd"
@@ -9,6 +10,7 @@ import (
 	"github.com/htquangg/microservices-poc/internal/kafka"
 	mysql_internal "github.com/htquangg/microservices-poc/internal/mysql"
 	"github.com/htquangg/microservices-poc/internal/registry"
+	"github.com/htquangg/microservices-poc/internal/services/basket/basketpb"
 	"github.com/htquangg/microservices-poc/internal/services/basket/constants"
 	"github.com/htquangg/microservices-poc/internal/services/basket/internal/application"
 	"github.com/htquangg/microservices-poc/internal/services/basket/internal/domain"
@@ -16,10 +18,10 @@ import (
 	"github.com/htquangg/microservices-poc/internal/services/basket/internal/handlers"
 	"github.com/htquangg/microservices-poc/internal/services/basket/internal/mysql"
 	"github.com/htquangg/microservices-poc/internal/services/basket/internal/system"
-	pb_basket "github.com/htquangg/microservices-poc/internal/services/basket/proto"
 	"github.com/htquangg/microservices-poc/internal/tm"
 
 	"github.com/htquangg/di/v2"
+	"github.com/htquangg/microservices-poc/internal/services/store/storepb"
 )
 
 func startUp(ctx context.Context, svc system.Service) error {
@@ -37,7 +39,10 @@ func startUp(ctx context.Context, svc system.Service) error {
 			if err := domain.Registrations(reg); err != nil {
 				return nil, err
 			}
-			if err := pb_basket.Registrations(reg); err != nil {
+			if err := basketpb.Registrations(reg); err != nil {
+				return nil, err
+			}
+			if err := storepb.Registrations(reg); err != nil {
 				return nil, err
 			}
 
@@ -78,6 +83,25 @@ func startUp(ctx context.Context, svc system.Service) error {
 		Build: func(_ di.Container) (interface{}, error) {
 			outboxRepo := mysql_internal.NewOutboxStore(svc.DB())
 			return am.NewMessagePublisher(kafkaProducer, tm.OutboxPublisher(outboxRepo)), nil
+		},
+	})
+	builder.Add(di.Def{
+		Name:  constants.InboxStoreKey,
+		Scope: di.App,
+		Build: func(_ di.Container) (interface{}, error) {
+			return mysql_internal.NewInboxStore(svc.DB()), nil
+		},
+	})
+	builder.Add(di.Def{
+		Name:  constants.MessageSubscriberKey,
+		Scope: di.App,
+		Build: func(_ di.Container) (interface{}, error) {
+			return am.NewMessageSubscriber(kafka.NewConsumer(&kafka.ConsumerConfig{
+				Brokers:        svc.Config().Kafka.Brokers,
+				Log:            svc.Logger(),
+				Concurrency:    1,
+				CommitInterval: time.Second,
+			})), nil
 		},
 	})
 	builder.Add(di.Def{
@@ -139,6 +163,19 @@ func startUp(ctx context.Context, svc system.Service) error {
 			return handlers.NewDomainEventHandlers(c.Get(constants.EventPublisherKey).(am.EventPublisher)), nil
 		},
 	})
+	builder.Add(di.Def{
+		Name:  constants.IntegrationEventHandlersKey,
+		Scope: di.Request,
+		Build: func(c di.Container) (interface{}, error) {
+			return handlers.NewIntegrationEventHandlers(
+					c.Get(constants.RegistryKey).(registry.Registry),
+					c.Get(constants.StoreRepoKey).(domain.StoreRepository),
+					c.Get(constants.ProductRepoKey).(domain.ProductRepository),
+					tm.InboxHandler(c.Get(constants.InboxStoreKey).(tm.InboxStore)),
+				),
+				nil
+		},
+	})
 
 	container := builder.Build()
 
@@ -147,6 +184,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 		return err
 	}
 	handlers.RegisterDomainEventHandlers(container)
+	handlers.RegisterIntergrationEventHandlers(container, svc.DB())
 
 	return nil
 }

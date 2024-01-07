@@ -6,9 +6,9 @@ import (
 	"github.com/htquangg/di/v2"
 	"github.com/htquangg/microservices-poc/internal/am"
 	"github.com/htquangg/microservices-poc/internal/ddd"
+	"github.com/htquangg/microservices-poc/internal/services/basket/basketpb"
 	"github.com/htquangg/microservices-poc/internal/services/basket/constants"
 	"github.com/htquangg/microservices-poc/internal/services/basket/internal/domain"
-	pb_basket "github.com/htquangg/microservices-poc/internal/services/basket/proto"
 )
 
 type domainHandlers[T ddd.Event] struct {
@@ -57,9 +57,9 @@ func (h domainHandlers[T]) HandleEvent(ctx context.Context, event T) error {
 func (h domainHandlers[T]) onBasketStarted(ctx context.Context, event T) error {
 	basket := event.Payload().(*domain.BasketES)
 	return h.publisher.Publish(ctx,
-		pb_basket.BasketAggregateChannel,
-		ddd.NewEvent(pb_basket.BasketStartedEvent,
-			&pb_basket.BasketStarted{
+		basketpb.BasketAggregateChannel,
+		ddd.NewEvent(basketpb.BasketStartedEvent,
+			&basketpb.BasketStarted{
 				Id:         basket.ID(),
 				CustomerId: basket.CustomerID(),
 			},
@@ -70,9 +70,9 @@ func (h domainHandlers[T]) onBasketStarted(ctx context.Context, event T) error {
 func (h domainHandlers[T]) onBasketCancelled(ctx context.Context, event T) error {
 	basket := event.Payload().(*domain.BasketES)
 	return h.publisher.Publish(ctx,
-		pb_basket.BasketAggregateChannel,
-		ddd.NewEvent(pb_basket.BasketCancelledEvent,
-			&pb_basket.BasketCancelled{
+		basketpb.BasketAggregateChannel,
+		ddd.NewEvent(basketpb.BasketCancelledEvent,
+			&basketpb.BasketCancelled{
 				Id: basket.ID(),
 			},
 		),
@@ -82,9 +82,9 @@ func (h domainHandlers[T]) onBasketCancelled(ctx context.Context, event T) error
 func (h domainHandlers[T]) onBasketCheckedOut(ctx context.Context, event T) error {
 	basket := event.Payload().(*domain.BasketES)
 
-	items := make([]*pb_basket.BasketCheckedOut_Item, 0, len(basket.RawItems()))
+	items := make([]*basketpb.BasketCheckedOut_Item, 0, len(basket.RawItems()))
 	for _, item := range basket.RawItems() {
-		items = append(items, &pb_basket.BasketCheckedOut_Item{
+		items = append(items, &basketpb.BasketCheckedOut_Item{
 			StoreId:     item.StoreID(),
 			StoreName:   item.StoreName(),
 			ProductId:   item.ProductID(),
@@ -95,9 +95,9 @@ func (h domainHandlers[T]) onBasketCheckedOut(ctx context.Context, event T) erro
 	}
 
 	return h.publisher.Publish(ctx,
-		pb_basket.BasketAggregateChannel,
-		ddd.NewEvent(pb_basket.BasketCheckedOutEvent,
-			&pb_basket.BasketCheckedOut{
+		basketpb.BasketAggregateChannel,
+		ddd.NewEvent(basketpb.BasketCheckedOutEvent,
+			&basketpb.BasketCheckedOut{
 				Id:         basket.ID(),
 				CustomerId: basket.CustomerID(),
 				PaymentId:  basket.PaymentID(),

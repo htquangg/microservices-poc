@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package basketpb;
 
-option go_package = ",/;proto";
-
 message BasketStarted {
   string id = 1;
   string customer_id = 2;

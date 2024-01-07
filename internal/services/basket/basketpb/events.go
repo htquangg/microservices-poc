@@ -1,4 +1,4 @@
-package proto
+package basketpb
 
 import (
 	"github.com/htquangg/microservices-poc/internal/registry"

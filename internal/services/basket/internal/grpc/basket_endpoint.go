@@ -3,9 +3,9 @@ package grpc
 import (
 	"context"
 
+	"github.com/htquangg/microservices-poc/internal/services/basket/basketpb"
 	"github.com/htquangg/microservices-poc/internal/services/basket/internal/application"
 	"github.com/htquangg/microservices-poc/internal/services/basket/internal/application/commands"
-	pb_basket "github.com/htquangg/microservices-poc/internal/services/basket/proto"
 	"github.com/htquangg/microservices-poc/internal/services/customer/constants"
 	"github.com/htquangg/microservices-poc/pkg/uid"
 
@@ -39,7 +39,7 @@ type (
 )
 
 func decodeStartBasketRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
-	req := grpcReq.(*pb_basket.StartBasketRequest)
+	req := grpcReq.(*basketpb.StartBasketRequest)
 	return startBasketRequest{
 		ID:         uid.GetManager().ID(),
 		CustomerID: req.GetCustomerId(),
@@ -48,7 +48,7 @@ func decodeStartBasketRequest(_ context.Context, grpcReq interface{}) (interface
 
 func encodeStartBasketResponse(_ context.Context, response interface{}) (interface{}, error) {
 	resp := response.(startBasketResponse)
-	return &pb_basket.StartBasketResponse{
+	return &basketpb.StartBasketResponse{
 		Id: resp.ID,
 	}, resp.Err
 }
@@ -82,7 +82,7 @@ type (
 )
 
 func decodeCancelBasketRequest(_ context.Context, grpcReq interface{}) (interface{}, error) {
-	req := grpcReq.(*pb_basket.CancelBasketRequest)
+	req := grpcReq.(*basketpb.CancelBasketRequest)
 	return cancelBasketRequest{
 		ID: req.GetId(),
 	}, nil
@@ -90,7 +90,7 @@ func decodeCancelBasketRequest(_ context.Context, grpcReq interface{}) (interfac
 
 func encodeCancelBasketResponse(_ context.Context, response interface{}) (interface{}, error) {
 	resp := response.(cancelBasketResponse)
-	return &pb_basket.CancelBasketResponse{}, resp.Err
+	return &basketpb.CancelBasketResponse{}, resp.Err
 }
 
 func makeCancelBasketEndpoint(c di.Container) endpoint.Endpoint {

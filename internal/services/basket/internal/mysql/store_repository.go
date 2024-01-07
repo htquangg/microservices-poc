@@ -24,6 +24,29 @@ func NewStoreRepository(db database.DB, fallback domain.StoreRepository) StoreRe
 	}
 }
 
+func (r StoreRepository) Add(ctx context.Context, store *domain.Store) error {
+	query := r.table(`
+		INSERT INTO %s (id, name)
+		VALUES (?, ?)
+		ON DUPLICATE KEY
+		UPDATE id=id
+	`)
+
+	_, err := r.db.Exec(ctx, query, store.ID, store.Name)
+
+	return err
+}
+
+func (r StoreRepository) Rebrand(ctx context.Context, id string, name string) error {
+	query := r.table(`
+		UPDATE %s SET name = ? WHERE id = ?
+	`)
+
+	_, err := r.db.Exec(ctx, query, name, id)
+
+	return err
+}
+
 func (r StoreRepository) FindOneByID(ctx context.Context, storeID string) (*domain.Store, error) {
 	query := r.table(`
 		SELECT id, name FROM %s
