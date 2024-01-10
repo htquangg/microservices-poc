@@ -30,10 +30,10 @@ func RegisterDomainEventHandlers(container di.Container) {
 
 	subscriber := container.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.Event])
 
-	registerDomainEventHanders(subscriber, handlers)
+	registerDomainEventHandlers(subscriber, handlers)
 }
 
-func registerDomainEventHanders(subscriber ddd.EventSubscriber[ddd.Event], handlers ddd.EventHandler[ddd.Event]) {
+func registerDomainEventHandlers(subscriber ddd.EventSubscriber[ddd.Event], handlers ddd.EventHandler[ddd.Event]) {
 	subscriber.Subscribe(handlers,
 		domain.StoreCreatedEvent,
 		domain.StoreRebrandedEvent,

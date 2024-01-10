@@ -11,9 +11,9 @@ import (
 	"google.golang.org/grpc"
 )
 
-var _ basketpb.BasketServiceServer = (*customerServer)(nil)
+var _ basketpb.BasketServiceServer = (*basketServer)(nil)
 
-type customerServer struct {
+type basketServer struct {
 	basketpb.UnimplementedBasketServiceServer
 
 	c  di.Container
@@ -30,7 +30,7 @@ func registerBasketServer(
 ) error {
 	endpoints := makeBasketEndpoints(c)
 
-	basketpb.RegisterBasketServiceServer(registrar, customerServer{
+	basketpb.RegisterBasketServiceServer(registrar, basketServer{
 		c:  c,
 		db: db,
 		startBasket: grpc_transport.NewServer(
@@ -48,7 +48,7 @@ func registerBasketServer(
 	return nil
 }
 
-func (s customerServer) StartBasket(
+func (s basketServer) StartBasket(
 	ctx context.Context,
 	request *basketpb.StartBasketRequest,
 ) (*basketpb.StartBasketResponse, error) {
@@ -67,7 +67,7 @@ func (s customerServer) StartBasket(
 	return resp.(*basketpb.StartBasketResponse), nil
 }
 
-func (s customerServer) CancelBasket(
+func (s basketServer) CancelBasket(
 	ctx context.Context,
 	request *basketpb.CancelBasketRequest,
 ) (*basketpb.CancelBasketResponse, error) {

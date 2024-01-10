@@ -34,7 +34,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 
 	// setup application
 	app := application.New()
-	intergrationEventHanders := handlers.NewIntegrationEventHandlers(reg,
+	integrationEventHandlers := handlers.NewIntegrationEventHandlers(reg,
 		app,
 		customerRepo,
 		tm.InboxHandler(inboxStore),
@@ -44,7 +44,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 	if err := grpc.RegisterServer(ctx, app, svc.RPC()); err != nil {
 		return err
 	}
-	if err := handlers.RegisterIntergrationEventHandlers(messageSubscriber, intergrationEventHanders); err != nil {
+	if err := handlers.RegisterIntergrationEventHandlers(messageSubscriber, integrationEventHandlers); err != nil {
 		return err
 	}
 
