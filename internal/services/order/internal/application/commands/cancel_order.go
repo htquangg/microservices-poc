@@ -11,47 +11,44 @@ import (
 )
 
 type (
-	CreateOrder struct {
-		ID         string
-		CustomerID string
-		PaymentID  string
-		Items      []*domain.Item
+	CancelOrder struct {
+		ID string
 	}
 
-	CreateOrderHandler decorator.CommandHandler[CreateOrder]
+	CancelOrderHandler decorator.CommandHandler[CancelOrder]
 
-	createOrderHandler struct {
+	cancelOrderHandler struct {
 		orderESRepo domain.OrderESRepository
 		publisher   ddd.EventPublisher[ddd.Event]
 		log         logger.Logger
 	}
 )
 
-func NewCreateOrderHandler(
+func NewCancelOrderHandler(
 	orderESRepo domain.OrderESRepository,
 	publisher ddd.EventPublisher[ddd.Event],
 	log logger.Logger,
-) CreateOrderHandler {
-	return &createOrderHandler{
+) CancelOrderHandler {
+	return &cancelOrderHandler{
 		orderESRepo: orderESRepo,
 		publisher:   publisher,
 		log:         log,
 	}
 }
 
-func (h *createOrderHandler) Handle(ctx context.Context, cmd CreateOrder) error {
+func (h *cancelOrderHandler) Handle(ctx context.Context, cmd CancelOrder) error {
 	orderES, err := h.orderESRepo.Load(ctx, cmd.ID)
 	if err != nil {
 		return errors.Wrap(err, "error loading order")
 	}
 
-	event, err := orderES.CreateOrder(cmd.ID, cmd.CustomerID, cmd.PaymentID, cmd.Items)
+	event, err := orderES.Cancel()
 	if err != nil {
-		return errors.Wrap(err, "creating order")
+		return errors.Wrap(err, "cancelling order")
 	}
 
 	if err = h.orderESRepo.Save(ctx, orderES); err != nil {
-		return errors.Wrap(err, "error creating order")
+		return errors.Wrap(err, "error cancelling order")
 	}
 
 	return h.publisher.Publish(ctx, event)
