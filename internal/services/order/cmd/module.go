@@ -14,7 +14,9 @@ import (
 	"github.com/htquangg/microservices-poc/internal/services/order/internal/application"
 	"github.com/htquangg/microservices-poc/internal/services/order/internal/domain"
 	"github.com/htquangg/microservices-poc/internal/services/order/internal/grpc"
+	"github.com/htquangg/microservices-poc/internal/services/order/internal/handlers"
 	"github.com/htquangg/microservices-poc/internal/services/order/internal/system"
+	"github.com/htquangg/microservices-poc/internal/services/order/orderpb"
 	"github.com/htquangg/microservices-poc/internal/tm"
 
 	"github.com/htquangg/di/v2"
@@ -34,6 +36,9 @@ func startUp(ctx context.Context, svc system.Service) error {
 			reg := registry.New()
 
 			if err := domain.Registrations(reg); err != nil {
+				return nil, err
+			}
+			if err := orderpb.Registrations(reg); err != nil {
 				return nil, err
 			}
 
@@ -132,6 +137,13 @@ func startUp(ctx context.Context, svc system.Service) error {
 				nil
 		},
 	})
+	builder.Add(di.Def{
+		Name:  constants.DomainEventHandlersKey,
+		Scope: di.Request,
+		Build: func(c di.Container) (interface{}, error) {
+			return handlers.NewDomainEventHandlers(c.Get(constants.EventPublisherKey).(am.EventPublisher)), nil
+		},
+	})
 
 	container := builder.Build()
 
@@ -139,6 +151,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 	if err := grpc.RegisterServer(container, svc.DB(), svc.RPC()); err != nil {
 		return err
 	}
+	handlers.RegisterDomainEventHandlers(container)
 
 	return nil
 }

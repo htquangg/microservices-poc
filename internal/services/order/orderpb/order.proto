@@ -1,0 +1,60 @@
+syntax = "proto3";
+
+package orderpb;
+
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse) {};
+  rpc CancelOrder(CancelOrderRequest) returns (CancelOrderResponse) {};
+  rpc CompleteOrder(CompleteOrderRequest) returns (CompleteOrderResponse) {};
+  rpc GetOrderByID(GetOrderByIDRequest) returns (GetOrderByIDResponse) {};
+}
+
+message Order {
+  string id = 1;
+  string customer_id = 2;
+  string payment_id = 3;
+  repeated Item items = 4;
+  string status = 5;
+}
+
+message Item {
+  string store_id = 1;
+  string store_name = 2;
+  string product_id = 3;
+  string product_name = 4;
+  double price = 5;
+  int32 quantiy = 6;
+}
+
+message CreateOrderRequest {
+  repeated Item items = 1;
+  string customer_id = 2;
+  string payment_id = 3;
+}
+
+message CreateOrderResponse {
+  string id = 1;
+}
+
+message CancelOrderRequest {
+  string id = 1;
+}
+
+message CancelOrderResponse {
+}
+
+message CompleteOrderRequest {
+  string id = 1;
+  string invoice_id = 2;
+}
+
+message CompleteOrderResponse {
+}
+
+message GetOrderByIDRequest {
+  string id = 1;
+}
+
+message GetOrderByIDResponse {
+  Order order = 1;
+}
