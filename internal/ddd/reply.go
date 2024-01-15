@@ -11,7 +11,7 @@ type (
 	Reply interface {
 		IDer
 		ReplyName() string
-		Payload() interface{}
+		Payload() ReplyPayload
 		Metadata() Metadata
 		OccurredAt() time.Time
 	}
@@ -21,6 +21,8 @@ type (
 	}
 
 	ReplyHandlerFunc[T Reply] func(ctx context.Context, reply T) error
+
+	ReplyPayload interface{}
 
 	ReplyOption interface {
 		configureReply(*reply)
@@ -36,11 +38,11 @@ type (
 
 var _ Reply = (*reply)(nil)
 
-func NewReply(name string, payload interface{}, options ...ReplyOption) Reply {
+func NewReply(name string, payload ReplyPayload, options ...ReplyOption) Reply {
 	return newReply(name, payload, options...)
 }
 
-func newReply(name string, payload interface{}, options ...ReplyOption) reply {
+func newReply(name string, payload ReplyPayload, options ...ReplyOption) reply {
 	rep := reply{
 		Entity:     NewEntity(uid.GetManager().ID(), name),
 		payload:    payload,
@@ -59,7 +61,7 @@ func (e reply) ReplyName() string {
 	return e.EntityName()
 }
 
-func (e reply) Payload() interface{} {
+func (e reply) Payload() ReplyPayload {
 	return e.payload
 }
 

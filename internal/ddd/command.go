@@ -11,7 +11,7 @@ type (
 	Command interface {
 		IDer
 		CommandName() string
-		Payload() interface{}
+		Payload() CommandPayload
 		Metadata() Metadata
 		OccurredAt() time.Time
 	}
@@ -22,13 +22,15 @@ type (
 
 	CommandHandlerFunc[T Command] func(ctx context.Context, cmd T) (Reply, error)
 
+	CommandPayload interface{}
+
 	CommandOption interface {
 		configureCommand(*command)
 	}
 
 	command struct {
 		Entity
-		payload    interface{}
+		payload    CommandPayload
 		metadata   Metadata
 		occurredAt time.Time
 	}
@@ -36,7 +38,7 @@ type (
 
 var _ Command = (*command)(nil)
 
-func NewCommand(name string, payload interface{}, options ...CommandOption) Command {
+func NewCommand(name string, payload CommandPayload, options ...CommandOption) Command {
 	return newCommand(name, payload, options...)
 }
 
@@ -59,7 +61,7 @@ func (e command) CommandName() string {
 	return e.EntityName()
 }
 
-func (e command) Payload() interface{} {
+func (e command) Payload() CommandPayload {
 	return e.payload
 }
 
