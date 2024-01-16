@@ -37,5 +37,10 @@ func Registrations(reg registry.Registry) error {
 		return err
 	}
 
+	// basket snapshots
+	if err := serde.RegisterKey(BasketV1{}.SnapshotName(), BasketV1{}); err != nil {
+		return err
+	}
+
 	return nil
 }

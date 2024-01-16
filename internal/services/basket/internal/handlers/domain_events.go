@@ -85,12 +85,12 @@ func (h domainHandlers[T]) onBasketCheckedOut(ctx context.Context, event T) erro
 	items := make([]*basketpb.BasketCheckedOut_Item, 0, len(basket.RawItems()))
 	for _, item := range basket.RawItems() {
 		items = append(items, &basketpb.BasketCheckedOut_Item{
-			StoreId:     item.StoreID(),
-			StoreName:   item.StoreName(),
-			ProductId:   item.ProductID(),
-			ProductName: item.ProductName(),
-			Price:       item.Price(),
-			Quantity:    int32(item.Quantity()),
+			StoreId:     item.StoreID,
+			StoreName:   item.StoreName,
+			ProductId:   item.ProductID,
+			ProductName: item.ProductName,
+			Price:       item.Price,
+			Quantity:    int32(item.Quantity),
 		})
 	}
 

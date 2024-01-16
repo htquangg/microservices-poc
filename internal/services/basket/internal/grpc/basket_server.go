@@ -19,8 +19,11 @@ type basketServer struct {
 	c  di.Container
 	db database.DB
 
-	startBasket  grpc_transport.Handler
-	cancelBasket grpc_transport.Handler
+	startBasket    grpc_transport.Handler
+	cancelBasket   grpc_transport.Handler
+	checkoutBasket grpc_transport.Handler
+	addItem        grpc_transport.Handler
+	removeItem     grpc_transport.Handler
 }
 
 func registerBasketServer(
@@ -42,6 +45,21 @@ func registerBasketServer(
 			endpoints.cancelBasketEndpoint,
 			decodeCancelBasketRequest,
 			encodeCancelBasketResponse,
+		),
+		checkoutBasket: grpc_transport.NewServer(
+			endpoints.checkoutBasketEndpoint,
+			decodeCheckoutBasketRequest,
+			encodeCheckoutBasketResponse,
+		),
+		addItem: grpc_transport.NewServer(
+			endpoints.addItemEndpoint,
+			decodeAddItemRequest,
+			encodeAddItemResponse,
+		),
+		removeItem: grpc_transport.NewServer(
+			endpoints.removeItemEndpoint,
+			decodeRemoveItemRequest,
+			encodeRemoveItemResponse,
 		),
 	})
 
@@ -84,4 +102,61 @@ func (s basketServer) CancelBasket(
 	}
 
 	return resp.(*basketpb.CancelBasketResponse), nil
+}
+
+func (s basketServer) CheckoutBasket(
+	ctx context.Context,
+	request *basketpb.CheckoutBasketRequest,
+) (*basketpb.CheckoutBasketResponse, error) {
+	ctx = s.c.Scoped(ctx)
+
+	var resp interface{}
+
+	err := s.db.WithTx(ctx, func(ctx context.Context) (err error) {
+		_, resp, err = s.checkoutBasket.ServeGRPC(ctx, request)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*basketpb.CheckoutBasketResponse), nil
+}
+
+func (s basketServer) AddItem(
+	ctx context.Context,
+	request *basketpb.AddItemRequest,
+) (*basketpb.AddItemResponse, error) {
+	ctx = s.c.Scoped(ctx)
+
+	var resp interface{}
+
+	err := s.db.WithTx(ctx, func(ctx context.Context) (err error) {
+		_, resp, err = s.addItem.ServeGRPC(ctx, request)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*basketpb.AddItemResponse), nil
+}
+
+func (s basketServer) RemoveItem(
+	ctx context.Context,
+	request *basketpb.RemoveItemRequest,
+) (*basketpb.RemoveItemResponse, error) {
+	ctx = s.c.Scoped(ctx)
+
+	var resp interface{}
+
+	err := s.db.WithTx(ctx, func(ctx context.Context) (err error) {
+		_, resp, err = s.removeItem.ServeGRPC(ctx, request)
+		return err
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*basketpb.RemoveItemResponse), nil
 }

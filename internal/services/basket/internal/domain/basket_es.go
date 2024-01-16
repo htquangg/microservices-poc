@@ -137,12 +137,12 @@ func (b *BasketES) AddItem(store *Store, product *Product, quantity int) error {
 
 	b.AddEvent(BasketItemAddedEvent, &BasketItemAdded{
 		Item: Item{
-			storeID:     store.ID,
-			productID:   product.ID,
-			storeName:   store.Name,
-			productName: product.Name,
-			price:       product.Price,
-			quantity:    quantity,
+			StoreID:     store.ID,
+			ProductID:   product.ID,
+			StoreName:   store.Name,
+			ProductName: product.Name,
+			Price:       product.Price,
+			Quantity:    quantity,
 		},
 	})
 
@@ -175,19 +175,19 @@ func (b *BasketES) ApplyEvent(event ddd.Event) error {
 		b.status = BasketIsOpen
 
 	case *BasketItemAdded:
-		if item, exists := b.items[payload.Item.productID]; exists {
-			item.quantity += payload.Item.quantity
-			b.items[payload.Item.productID] = item
+		if item, exists := b.items[payload.Item.ProductID]; exists {
+			item.Quantity += payload.Item.Quantity
+			b.items[payload.Item.ProductID] = item
 		} else {
-			b.items[payload.Item.productID] = &payload.Item
+			b.items[payload.Item.ProductID] = &payload.Item
 		}
 
 	case *BasketItemRemoved:
 		if item, exists := b.items[payload.ProductID]; exists {
-			if item.quantity-payload.Quantity <= 1 {
+			if item.Quantity-payload.Quantity <= 1 {
 				delete(b.items, payload.ProductID)
 			} else {
-				item.quantity -= payload.Quantity
+				item.Quantity -= payload.Quantity
 				b.items[payload.ProductID] = item
 			}
 		}

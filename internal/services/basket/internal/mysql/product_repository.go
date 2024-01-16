@@ -25,6 +25,24 @@ func NewProductRepository(db database.DB, fallback domain.ProductRepository) Pro
 	}
 }
 
+func (r ProductRepository) Add(
+	ctx context.Context,
+	productID string,
+	storeID string,
+	name string,
+	sku string,
+	price float64,
+) error {
+	query := r.table(`
+		INSERT INTO %s (id, store_id, name, sku, price)
+		VALUES (?, ?, ?, ?, ?)
+	`)
+
+	_, err := r.db.Exec(ctx, query, productID, storeID, name, sku, price)
+
+	return err
+}
+
 func (r ProductRepository) FindOneByID(ctx context.Context, productID string) (*domain.Product, error) {
 	query := r.table(`
 		SELECT id, store_id, name, price FROM %s
