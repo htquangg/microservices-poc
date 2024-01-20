@@ -1,6 +1,14 @@
 package sec
 
+import "github.com/htquangg/microservices-poc/internal/am"
+
 const (
+	SagaCommandIDHandler   = am.CommandHandlerPrefix + "SAGA_ID"
+	SagaCommandNameHandler = am.CommandHandlerPrefix + "SAGA_NAME"
+
+	SagaReplyIDHandler   = am.ReplyHandlerPrefix + "SAGA_ID"
+	SagaReplyNameHandler = am.ReplyHandlerPrefix + "SAGA_NAME"
+
 	isCompensating  = true
 	notCompensating = false
 )
@@ -70,4 +78,13 @@ func (s *SagaContext[T]) complete() {
 
 func (s *SagaContext[T]) compensate() {
 	s.Compensating = true
+}
+
+func (s *SagaContext[T]) advance(steps int) {
+	dir := 1
+	if s.Compensating {
+		dir = -1
+	}
+
+	s.Step += dir * steps
 }
