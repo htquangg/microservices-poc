@@ -6,13 +6,18 @@ import (
 )
 
 const (
-	OrderAggregateChannel = "mallbots.ordering.events.Order"
+	OrderAggregateChannel = "mall.orders.events.Order"
 
-	OrderCreatedEvent   = "ordersapi.OrderCreated"
-	OrderRejectedEvent  = "ordersapi.OrderRejected"
-	OrderApprovedEvent  = "ordersapi.OrderApproved"
-	OrderCanceledEvent  = "ordersapi.OrderCanceled"
-	OrderCompletedEvent = "ordersapi.OrderCompleted"
+	OrderCreatedEvent   = "orderapi.OrderCreated"
+	OrderRejectedEvent  = "orderapi.OrderRejected"
+	OrderApprovedEvent  = "orderapi.OrderApproved"
+	OrderCanceledEvent  = "orderapi.OrderCanceled"
+	OrderCompletedEvent = "orderapi.OrderCompleted"
+
+	CommandChannel = "mall.orders.commands"
+
+	ApproveOrderCommand = "orderapi.ApproveOrder"
+	RejectOrderCommand  = "orderapi.RejectOrder"
 )
 
 func Registrations(reg registry.Registry) (err error) {

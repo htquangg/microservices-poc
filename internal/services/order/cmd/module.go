@@ -19,6 +19,7 @@ import (
 	"github.com/htquangg/microservices-poc/internal/services/order/internal/system"
 	"github.com/htquangg/microservices-poc/internal/services/order/orderpb"
 	"github.com/htquangg/microservices-poc/internal/tm"
+	"github.com/htquangg/microservices-poc/pkg/logger"
 
 	"github.com/htquangg/di/v2"
 )
@@ -160,6 +161,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 				nil
 		},
 	})
+	outboxProcessor := tm.NewOutboxProcessor(kafkaProducer, mysql_internal.NewOutboxStore(svc.DB()))
 
 	container := builder.Build()
 
@@ -169,6 +171,16 @@ func startUp(ctx context.Context, svc system.Service) error {
 	}
 	handlers.RegisterDomainEventHandlers(container)
 	handlers.RegisterIntegrationEventHandlers(container, svc.DB())
+	startOutboxProcessor(ctx, outboxProcessor, svc.Logger())
 
 	return nil
+}
+
+func startOutboxProcessor(ctx context.Context, outboxProcessor tm.OutboxProcessor, log logger.Logger) {
+	go func() {
+		err := outboxProcessor.Start(ctx)
+		if err != nil {
+			log.Err("customer outbox processor encountered an error", err)
+		}
+	}()
 }

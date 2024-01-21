@@ -568,6 +568,108 @@ func (x *GetOrderByIDResponse) GetOrder() *Order {
 	return nil
 }
 
+type RejectOrder struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+}
+
+func (x *RejectOrder) Reset() {
+	*x = RejectOrder{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_orderpb_order_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *RejectOrder) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RejectOrder) ProtoMessage() {}
+
+func (x *RejectOrder) ProtoReflect() protoreflect.Message {
+	mi := &file_orderpb_order_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RejectOrder.ProtoReflect.Descriptor instead.
+func (*RejectOrder) Descriptor() ([]byte, []int) {
+	return file_orderpb_order_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *RejectOrder) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type ApproveOrder struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id         string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	ShoppingId string `protobuf:"bytes,2,opt,name=shopping_id,json=shoppingId,proto3" json:"shopping_id,omitempty"`
+}
+
+func (x *ApproveOrder) Reset() {
+	*x = ApproveOrder{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_orderpb_order_proto_msgTypes[11]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *ApproveOrder) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ApproveOrder) ProtoMessage() {}
+
+func (x *ApproveOrder) ProtoReflect() protoreflect.Message {
+	mi := &file_orderpb_order_proto_msgTypes[11]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ApproveOrder.ProtoReflect.Descriptor instead.
+func (*ApproveOrder) Descriptor() ([]byte, []int) {
+	return file_orderpb_order_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *ApproveOrder) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *ApproveOrder) GetShoppingId() string {
+	if x != nil {
+		return x.ShoppingId
+	}
+	return ""
+}
+
 var File_orderpb_order_proto protoreflect.FileDescriptor
 
 var file_orderpb_order_proto_rawDesc = []byte{
@@ -620,6 +722,12 @@ var file_orderpb_order_proto_rawDesc = []byte{
 	0x49, 0x44, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x24, 0x0a, 0x05, 0x6f, 0x72,
 	0x64, 0x65, 0x72, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0e, 0x2e, 0x6f, 0x72, 0x64, 0x65,
 	0x72, 0x70, 0x62, 0x2e, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x52, 0x05, 0x6f, 0x72, 0x64, 0x65, 0x72,
+	0x22, 0x1d, 0x0a, 0x0b, 0x52, 0x65, 0x6a, 0x65, 0x63, 0x74, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x12,
+	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x22,
+	0x3f, 0x0a, 0x0c, 0x41, 0x70, 0x70, 0x72, 0x6f, 0x76, 0x65, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x12,
+	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12,
+	0x1f, 0x0a, 0x0b, 0x73, 0x68, 0x6f, 0x70, 0x70, 0x69, 0x6e, 0x67, 0x5f, 0x69, 0x64, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x73, 0x68, 0x6f, 0x70, 0x70, 0x69, 0x6e, 0x67, 0x49, 0x64,
 	0x32, 0xc7, 0x02, 0x0a, 0x0c, 0x4f, 0x72, 0x64, 0x65, 0x72, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63,
 	0x65, 0x12, 0x4a, 0x0a, 0x0b, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4f, 0x72, 0x64, 0x65, 0x72,
 	0x12, 0x1b, 0x2e, 0x6f, 0x72, 0x64, 0x65, 0x72, 0x70, 0x62, 0x2e, 0x43, 0x72, 0x65, 0x61, 0x74,
@@ -666,7 +774,7 @@ func file_orderpb_order_proto_rawDescGZIP() []byte {
 	return file_orderpb_order_proto_rawDescData
 }
 
-var file_orderpb_order_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_orderpb_order_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
 var file_orderpb_order_proto_goTypes = []interface{}{
 	(*Order)(nil),                 // 0: orderpb.Order
 	(*Item)(nil),                  // 1: orderpb.Item
@@ -678,6 +786,8 @@ var file_orderpb_order_proto_goTypes = []interface{}{
 	(*CompleteOrderResponse)(nil), // 7: orderpb.CompleteOrderResponse
 	(*GetOrderByIDRequest)(nil),   // 8: orderpb.GetOrderByIDRequest
 	(*GetOrderByIDResponse)(nil),  // 9: orderpb.GetOrderByIDResponse
+	(*RejectOrder)(nil),           // 10: orderpb.RejectOrder
+	(*ApproveOrder)(nil),          // 11: orderpb.ApproveOrder
 }
 var file_orderpb_order_proto_depIdxs = []int32{
 	1, // 0: orderpb.Order.items:type_name -> orderpb.Item
@@ -824,6 +934,30 @@ func file_orderpb_order_proto_init() {
 				return nil
 			}
 		}
+		file_orderpb_order_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*RejectOrder); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_orderpb_order_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ApproveOrder); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -831,7 +965,7 @@ func file_orderpb_order_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_orderpb_order_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   10,
+			NumMessages:   12,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

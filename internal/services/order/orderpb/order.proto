@@ -58,3 +58,14 @@ message GetOrderByIDRequest {
 message GetOrderByIDResponse {
   Order order = 1;
 }
+
+// Commands
+
+message RejectOrder {
+  string id = 1;
+}
+
+message ApproveOrder {
+  string id = 1;
+  string shopping_id = 2;
+}
