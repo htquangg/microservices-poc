@@ -23,7 +23,7 @@ message Item {
   string product_id = 3;
   string product_name = 4;
   double price = 5;
-  int32 quantiy = 6;
+  int32 quantity = 6;
 }
 
 message CreateOrderRequest {

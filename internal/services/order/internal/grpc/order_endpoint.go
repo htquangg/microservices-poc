@@ -52,7 +52,7 @@ func decodeCreateOrderRequest(_ context.Context, grpcReq interface{}) (interface
 				item.GetProductId(),
 				item.GetStoreId(),
 				item.GetPrice(),
-				int(item.GetQuantiy()),
+				int(item.GetQuantity()),
 				domain.WithProductName(item.GetProductName()),
 				domain.WithStoreName(item.GetStoreName()),
 			),
