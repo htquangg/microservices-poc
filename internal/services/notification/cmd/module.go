@@ -44,7 +44,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 	if err := grpc.RegisterServer(ctx, app, svc.RPC()); err != nil {
 		return err
 	}
-	if err := handlers.RegisterIntergrationEventHandlers(messageSubscriber, integrationEventHandlers); err != nil {
+	if err := handlers.RegisterIntegrationEventHandlers(messageSubscriber, integrationEventHandlers); err != nil {
 		return err
 	}
 

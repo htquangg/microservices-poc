@@ -184,7 +184,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 		return err
 	}
 	handlers.RegisterDomainEventHandlers(container)
-	handlers.RegisterIntergrationEventHandlers(container, svc.DB())
+	handlers.RegisterIntegrationEventHandlers(container, svc.DB())
 
 	return nil
 }

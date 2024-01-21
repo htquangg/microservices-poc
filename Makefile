@@ -72,7 +72,7 @@ sec: ## detect vulnerability go packages
 ###############################################################################
 .PHONY: proto
 proto: ## compile proto file
-	@echo Generating intergrate message  proto
+	@echo Generating integrate message  proto
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative ./internal/am/proto/*.proto
 	protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative ./internal/msq/proto/*.proto
 

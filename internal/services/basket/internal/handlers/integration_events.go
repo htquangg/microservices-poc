@@ -33,7 +33,7 @@ func NewIntegrationEventHandlers(
 	}, mws...)
 }
 
-func RegisterIntergrationEventHandlers(container di.Container, db database.DB) error {
+func RegisterIntegrationEventHandlers(container di.Container, db database.DB) error {
 	rawMsgHandler := am.MessageHandlerFunc(func(ctx context.Context, msg am.IncomingMessage) error {
 		ctx = container.Scoped(ctx)
 		return db.WithTx(ctx, func(ctx context.Context) error {
@@ -43,10 +43,10 @@ func RegisterIntergrationEventHandlers(container di.Container, db database.DB) e
 
 	subsciber := container.Get(constants.MessageSubscriberKey).(am.MessageSubscriber)
 
-	return registerIntergrationEventHandlers(subsciber, rawMsgHandler)
+	return registerIntegrationEventHandlers(subsciber, rawMsgHandler)
 }
 
-func registerIntergrationEventHandlers(subscriber am.MessageSubscriber, handlers am.MessageHandler) (err error) {
+func registerIntegrationEventHandlers(subscriber am.MessageSubscriber, handlers am.MessageHandler) (err error) {
 	if _, err = subscriber.Subscribe(storepb.StoreAggregateChannel, handlers, am.MessageFilter{
 		storepb.StoreCreatedEvent,
 		storepb.StoreRebrandedEvent,
