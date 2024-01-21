@@ -5,7 +5,6 @@ import (
 
 	"github.com/htquangg/microservices-poc/internal/am"
 	"github.com/htquangg/microservices-poc/internal/ddd"
-	"github.com/stackus/errors"
 )
 
 type (
@@ -17,14 +16,14 @@ type (
 
 	orchestrator[T any] struct {
 		saga      Saga[T]
-		repo      SagaRepository[T]
+		repo      *SagaRepository[T]
 		publisher am.CommandPublisher
 	}
 )
 
 var _ Orchestrator[any] = (*orchestrator[any])(nil)
 
-func NewOrchestrator[T any](saga Saga[T], repo SagaRepository[T], publisher am.CommandPublisher) Orchestrator[T] {
+func NewOrchestrator[T any](saga Saga[T], repo *SagaRepository[T], publisher am.CommandPublisher) Orchestrator[T] {
 	return &orchestrator[T]{
 		saga:      saga,
 		repo:      repo,

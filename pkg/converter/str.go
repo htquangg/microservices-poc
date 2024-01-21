@@ -59,3 +59,11 @@ func InterfaceToString(data interface{}) string {
 	}
 	return ""
 }
+
+func StringToBoolean(str string) bool {
+	val, err := strconv.ParseBool(str)
+	if err != nil {
+		return false
+	}
+	return val
+}

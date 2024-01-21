@@ -9,7 +9,7 @@ import (
 
 type (
 	SagaStore interface {
-		Load(ctx context.Context, sagaName string, id string) (*SagaContext[[]byte], error)
+		Load(ctx context.Context, sagaName string, sagaID string) (*SagaContext[[]byte], error)
 		Save(ctx context.Context, sagaName string, sagaCtx *SagaContext[[]byte]) error
 	}
 
@@ -26,8 +26,8 @@ func NewSagaRepository[T any](reg registry.Registry, store SagaStore) *SagaRepos
 	}
 }
 
-func (r *SagaRepository[T]) Load(ctx context.Context, sagaName string, id string) (*SagaContext[T], error) {
-	byteCtx, err := r.store.Load(ctx, sagaName, id)
+func (r *SagaRepository[T]) Load(ctx context.Context, sagaName string, sagaID string) (*SagaContext[T], error) {
+	byteCtx, err := r.store.Load(ctx, sagaName, sagaID)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,7 @@ func (r *SagaRepository[T]) Load(ctx context.Context, sagaName string, id string
 	}
 
 	return &SagaContext[T]{
-		ID:           id,
+		ID:           sagaID,
 		Data:         data,
 		Step:         byteCtx.Step,
 		Done:         byteCtx.Done,
