@@ -14,7 +14,7 @@ import (
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/handlers"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/mysql"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/system"
-	pb_customer "github.com/htquangg/microservices-poc/internal/services/customer/proto"
+	"github.com/htquangg/microservices-poc/internal/services/customer/customerpb"
 	"github.com/htquangg/microservices-poc/internal/tm"
 	"github.com/htquangg/microservices-poc/pkg/logger"
 
@@ -33,7 +33,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 		Scope: di.App,
 		Build: func(_ di.Container) (interface{}, error) {
 			reg := registry.New()
-			if err := pb_customer.Registrations(reg); err != nil {
+			if err := customerpb.Registrations(reg); err != nil {
 				return nil, err
 			}
 			return reg, nil

@@ -1,4 +1,4 @@
-package proto
+package customerpb
 
 import (
 	"github.com/htquangg/microservices-poc/internal/registry"
@@ -15,19 +15,29 @@ const (
 
 	CommandChannel = "mall.customers.commands"
 
-	AuthorizeCustomerCommand = "customersapi.AuthorizeCustomer"
+	AuthorizeCustomerCommand = "customerapi.AuthorizeCustomer"
 )
 
 func Registrations(reg registry.Registry) error {
 	serde := serdes.NewProtoSerde(reg)
 
-	// Customer events
+	// events
 	if err := serde.Register(&CustomerRegistered{}); err != nil {
 		return err
 	}
+
+	// commands
+	if err := serde.Register(&AuthorizeCustomer{}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (*CustomerRegistered) Key() string {
 	return CustomerRegisteredEvent
+}
+
+func (*AuthorizeCustomer) Key() string {
+	return AuthorizeCustomerCommand
 }

@@ -3,7 +3,7 @@ package grpc
 import (
 	"context"
 
-	pb_customer "github.com/htquangg/microservices-poc/internal/services/customer/proto"
+	"github.com/htquangg/microservices-poc/internal/services/customer/customerpb"
 	"github.com/htquangg/microservices-poc/pkg/database"
 
 	grpc_transport "github.com/go-kit/kit/transport/grpc"
@@ -11,10 +11,10 @@ import (
 	"google.golang.org/grpc"
 )
 
-var _ pb_customer.CustomerServiceServer = (*customerServer)(nil)
+var _ customerpb.CustomerServiceServer = (*customerServer)(nil)
 
 type customerServer struct {
-	pb_customer.UnimplementedCustomerServiceServer
+	customerpb.UnimplementedCustomerServiceServer
 
 	c  di.Container
 	db database.DB
@@ -29,7 +29,7 @@ func registerCustomerServer(
 ) error {
 	endpoints := makeCustomerEndpoints(c)
 
-	pb_customer.RegisterCustomerServiceServer(registrar, customerServer{
+	customerpb.RegisterCustomerServiceServer(registrar, customerServer{
 		c:  c,
 		db: db,
 		registerCustomer: grpc_transport.NewServer(
@@ -44,8 +44,8 @@ func registerCustomerServer(
 
 func (s customerServer) RegisterCustomer(
 	ctx context.Context,
-	request *pb_customer.RegisterCustomerRequest,
-) (*pb_customer.RegisterCustomerResponse, error) {
+	request *customerpb.RegisterCustomerRequest,
+) (*customerpb.RegisterCustomerResponse, error) {
 	ctx = s.c.Scoped(ctx)
 
 	var resp interface{}
@@ -58,5 +58,5 @@ func (s customerServer) RegisterCustomer(
 		return nil, err
 	}
 
-	return resp.(*pb_customer.RegisterCustomerResponse), nil
+	return resp.(*customerpb.RegisterCustomerResponse), nil
 }
