@@ -2,6 +2,7 @@ package am
 
 import (
 	"context"
+	"strings"
 	"time"
 
 	proto_am "github.com/htquangg/microservices-poc/internal/am/proto"
@@ -197,7 +198,7 @@ func (h commandMessageHandler) success(reply ddd.Reply, cmd ddd.Command) ddd.Rep
 
 	reply.Metadata().Set(ReplyOutcomeHandler, OutcomeSuccess)
 
-	return reply
+	return h.applyCorrelationHeaders(reply, cmd)
 }
 
 func (h commandMessageHandler) failure(reply ddd.Reply, cmd ddd.Command) ddd.Reply {
@@ -206,6 +207,21 @@ func (h commandMessageHandler) failure(reply ddd.Reply, cmd ddd.Command) ddd.Rep
 	}
 
 	reply.Metadata().Set(ReplyOutcomeHandler, OutcomeFailure)
+
+	return h.applyCorrelationHeaders(reply, cmd)
+}
+
+func (h commandMessageHandler) applyCorrelationHeaders(reply ddd.Reply, cmd ddd.Command) ddd.Reply {
+	for key, value := range cmd.Metadata() {
+		if key == CommandNameHandler {
+			continue
+		}
+
+		if strings.HasPrefix(key, CommandHandlerPrefix) {
+			hdr := ReplyHandlerPrefix + key[len(CommandHandlerPrefix):]
+			reply.Metadata().Set(hdr, value)
+		}
+	}
 
 	return reply
 }

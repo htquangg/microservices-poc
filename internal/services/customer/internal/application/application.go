@@ -15,6 +15,7 @@ type (
 
 	Commands struct {
 		commands.RegisterCustomerHandler
+		commands.AuthorizeCustomerHandler
 	}
 
 	Queries struct{}
@@ -27,7 +28,8 @@ func New(
 ) *Application {
 	return &Application{
 		Commands: Commands{
-			RegisterCustomerHandler: commands.NewRegisterCustomerHandler(customerRepo, publisher, log),
+			RegisterCustomerHandler:  commands.NewRegisterCustomerHandler(customerRepo, publisher, log),
+			AuthorizeCustomerHandler: commands.NewAuthorizeCustomerHandler(customerRepo, publisher, log),
 		},
 	}
 }

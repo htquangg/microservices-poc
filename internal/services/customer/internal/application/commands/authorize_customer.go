@@ -10,46 +10,44 @@ import (
 )
 
 type (
-	RegisterCustomer struct {
-		ID    string
-		Name  string
-		Phone string
-		Email string
+	AuthorizeCustomer struct {
+		ID string
 	}
 
-	RegisterCustomerHandler decorator.CommandHandler[RegisterCustomer]
+	AuthorizeCustomerHandler decorator.CommandHandler[AuthorizeCustomer]
 
-	registerCustomerHandler struct {
+	authorizeCustomerHandler struct {
 		customerRepo domain.CustomerRepository
 		publisher    ddd.EventPublisher[ddd.AggregateEvent]
 		log          logger.Logger
 	}
 )
 
-func NewRegisterCustomerHandler(
+func NewAuthorizeCustomerHandler(
 	customerRepo domain.CustomerRepository,
 	publisher ddd.EventPublisher[ddd.AggregateEvent],
 	log logger.Logger,
-) RegisterCustomerHandler {
-	return decorator.ApplyCommandDecorators[RegisterCustomer](
-		&registerCustomerHandler{
+) AuthorizeCustomerHandler {
+	return decorator.ApplyCommandDecorators[AuthorizeCustomer](
+		&authorizeCustomerHandler{
 			customerRepo: customerRepo,
 			publisher:    publisher,
 			log:          log,
-		}, log)
+		},
+		log,
+	)
 }
 
-func (h *registerCustomerHandler) Handle(ctx context.Context, cmd RegisterCustomer) error {
-	customer, err := domain.RegisterCustomer(cmd.ID, cmd.Name, cmd.Phone, cmd.Email)
+func (h *authorizeCustomerHandler) Handle(ctx context.Context, cmd AuthorizeCustomer) error {
+	customer, err := h.customerRepo.Find(ctx, cmd.ID)
 	if err != nil {
 		return err
 	}
 
-	err = h.customerRepo.Save(ctx, customer)
+	err = customer.Authorize()
 	if err != nil {
 		return err
 	}
 
-	// publish domain events
 	return h.publisher.Publish(ctx, customer.Events()...)
 }

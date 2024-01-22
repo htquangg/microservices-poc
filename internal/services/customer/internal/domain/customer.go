@@ -38,13 +38,7 @@ func (c *Customer) Email() string {
 	return c.email
 }
 
-func NewCustomer(id string) *Customer {
-	return &Customer{
-		Aggregate: ddd.NewAggregate(id, CustomerAggregate),
-	}
-}
-
-func RegisterCustomer(id, name, phone, email string, options ...CustomerOption) (*Customer, error) {
+func NewCustomer(id string, name, phone, email string, options ...CustomerOption) (*Customer, error) {
 	if id == "" {
 		return nil, ErrCustomerIDCannotBeBlank
 	}
@@ -61,10 +55,9 @@ func RegisterCustomer(id, name, phone, email string, options ...CustomerOption) 
 		return nil, ErrEmailCannotBeBlank
 	}
 
-	customer := NewCustomer(id)
-	customer.name = name
-	customer.phone = phone
-	customer.email = email
+	customer := &Customer{
+		Aggregate: ddd.NewAggregate(id, CustomerAggregate),
+	}
 
 	for _, option := range options {
 		if err := option(customer); err != nil {
@@ -72,9 +65,26 @@ func RegisterCustomer(id, name, phone, email string, options ...CustomerOption) 
 		}
 	}
 
+	return customer, nil
+}
+
+func RegisterCustomer(id, name, phone, email string, options ...CustomerOption) (*Customer, error) {
+	customer, err := NewCustomer(id, name, phone, email, options...)
+	if err != nil {
+		return nil, err
+	}
+
 	customer.AddEvent(CustomerRegisteredEvent, &CustomerRegistered{
 		Customer: customer,
 	})
 
 	return customer, nil
+}
+
+func (c *Customer) Authorize() error {
+	c.AddEvent(CustomerAuthorizedEvent, &CustomerAuthorized{
+		Customer: c,
+	})
+
+	return nil
 }

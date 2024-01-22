@@ -6,6 +6,7 @@ import (
 	"github.com/htquangg/microservices-poc/internal/ddd"
 	"github.com/htquangg/microservices-poc/internal/sec"
 	"github.com/htquangg/microservices-poc/internal/services/cosec/models"
+	"github.com/htquangg/microservices-poc/internal/services/customer/customerpb"
 	"github.com/htquangg/microservices-poc/internal/services/order/orderpb"
 )
 
@@ -55,7 +56,11 @@ func (s *createOrderSaga) authorizeCustomer(
 	ctx context.Context,
 	data *models.CreateOrderData,
 ) (string, ddd.Command, error) {
-	panic("unimplemented")
+	return customerpb.CommandChannel,
+		ddd.NewCommand(customerpb.AuthorizeCustomerCommand, &customerpb.AuthorizeCustomer{
+			Id: data.CustomerID,
+		}),
+		nil
 }
 
 func (s *createOrderSaga) confirmPayment(

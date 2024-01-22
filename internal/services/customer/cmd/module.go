@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"time"
 
 	"github.com/htquangg/microservices-poc/internal/am"
 	"github.com/htquangg/microservices-poc/internal/ddd"
@@ -9,12 +10,12 @@ import (
 	mysql_internal "github.com/htquangg/microservices-poc/internal/mysql"
 	"github.com/htquangg/microservices-poc/internal/registry"
 	"github.com/htquangg/microservices-poc/internal/services/customer/constants"
+	"github.com/htquangg/microservices-poc/internal/services/customer/customerpb"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/application"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/grpc"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/handlers"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/mysql"
 	"github.com/htquangg/microservices-poc/internal/services/customer/internal/system"
-	"github.com/htquangg/microservices-poc/internal/services/customer/customerpb"
 	"github.com/htquangg/microservices-poc/internal/tm"
 	"github.com/htquangg/microservices-poc/pkg/logger"
 
@@ -67,6 +68,25 @@ func startUp(ctx context.Context, svc system.Service) error {
 		},
 	})
 	builder.Add(di.Def{
+		Name:  constants.InboxStoreKey,
+		Scope: di.App,
+		Build: func(_ di.Container) (interface{}, error) {
+			return mysql_internal.NewInboxStore(svc.DB()), nil
+		},
+	})
+	builder.Add(di.Def{
+		Name:  constants.MessageSubscriberKey,
+		Scope: di.App,
+		Build: func(_ di.Container) (interface{}, error) {
+			return am.NewMessageSubscriber(kafka.NewConsumer(&kafka.ConsumerConfig{
+				Brokers:        svc.Config().Kafka.Brokers,
+				Log:            svc.Logger(),
+				Concurrency:    1,
+				CommitInterval: time.Second,
+			})), nil
+		},
+	})
+	builder.Add(di.Def{
 		Name:  constants.EventPublisherKey,
 		Scope: di.Request,
 		Build: func(c di.Container) (interface{}, error) {
@@ -76,6 +96,17 @@ func startUp(ctx context.Context, svc system.Service) error {
 			), nil
 		},
 	})
+	builder.Add(
+		di.Def{
+			Name:  constants.ReplyPublisherKey,
+			Scope: di.Request,
+			Build: func(c di.Container) (interface{}, error) {
+				return am.NewReplyPublisher(
+					c.Get(constants.RegistryKey).(registry.Registry),
+					c.Get(constants.MessagePublisherKey).(am.MessagePublisher),
+				), nil
+			},
+		})
 
 	// setup application
 	builder.Add(di.Def{
@@ -97,6 +128,18 @@ func startUp(ctx context.Context, svc system.Service) error {
 			return handlers.NewDomainEventHandlers(c.Get(constants.EventPublisherKey).(am.EventPublisher)), nil
 		},
 	})
+	builder.Add(di.Def{
+		Name:  constants.CommandHandlersKey,
+		Scope: di.Request,
+		Build: func(c di.Container) (interface{}, error) {
+			return handlers.NewCommandHandlers(
+				c.Get(constants.RegistryKey).(registry.Registry),
+				c.Get(constants.ReplyPublisherKey).(am.ReplyPublisher),
+				c.Get(constants.ApplicationKey).(*application.Application),
+				tm.InboxHandler(c.Get(constants.InboxStoreKey).(tm.InboxStore)),
+			), nil
+		},
+	})
 	outboxProcessor := tm.NewOutboxProcessor(kafkaProducer, mysql_internal.NewOutboxStore(svc.DB()))
 
 	container := builder.Build()
@@ -106,6 +149,9 @@ func startUp(ctx context.Context, svc system.Service) error {
 		return err
 	}
 	handlers.RegisterDomainEventHandlers(container)
+	if err := handlers.RegisterCommandHandlers(container, svc.DB()); err != nil {
+		return err
+	}
 	startOutboxProcessor(ctx, outboxProcessor, svc.Logger())
 
 	return nil

@@ -52,7 +52,7 @@ func (o *orchestrator[T]) Start(ctx context.Context, id string, data T) error {
 }
 
 func (o *orchestrator[T]) ReplyTopic() string {
-	return o.saga.Name()
+	return o.saga.ReplyTopic()
 }
 
 func (o *orchestrator[T]) HandleReply(ctx context.Context, reply ddd.Reply) error {

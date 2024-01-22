@@ -14,6 +14,17 @@ CREATE TABLE IF NOT EXISTS customers
     phone      VARCHAR(16)                         NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS inboxes
+(
+  id           BIGINT(20) PRIMARY KEY NOT NULL,
+  subject      VARCHAR(255)           NOT NULL,
+  name         VARCHAR(255)           NOT NULL,
+  data         BLOB                   NOT NULL,
+  metadata     BLOB                   NOT NULL,
+  sent_at      DATETIME               NOT NULL,
+  received_at  DATETIME
+);
+
 CREATE TABLE IF NOT EXISTS outboxes
 (
     id           BIGINT(20) PRIMARY KEY NOT NULL,
@@ -31,5 +42,7 @@ SELECT 'down SQL query';
 -- +goose StatementEnd
 
 DROP TABLE IF EXISTS outboxes;
+
+DROP TABLE IF EXISTS inboxes;
 
 DROP TABLE IF EXISTS customers;

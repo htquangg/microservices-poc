@@ -40,6 +40,11 @@ func Registrations(reg registry.Registry) (err error) {
 		return err
 	}
 
+	// Order commands
+	if err = serde.Register(&RejectOrder{}); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -61,4 +66,8 @@ func (*OrderCanceled) Key() string {
 
 func (*OrderCompleted) Key() string {
 	return OrderCompletedEvent
+}
+
+func (*RejectOrder) Key() string {
+	return RejectOrderCommand
 }

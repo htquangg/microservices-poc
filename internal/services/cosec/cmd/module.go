@@ -17,8 +17,10 @@ import (
 	"github.com/htquangg/microservices-poc/internal/services/cosec/internal/saga"
 	"github.com/htquangg/microservices-poc/internal/services/cosec/internal/system"
 	"github.com/htquangg/microservices-poc/internal/services/cosec/models"
+	"github.com/htquangg/microservices-poc/internal/services/customer/customerpb"
 	"github.com/htquangg/microservices-poc/internal/services/order/orderpb"
 	"github.com/htquangg/microservices-poc/internal/tm"
+	"github.com/htquangg/microservices-poc/pkg/logger"
 
 	"github.com/htquangg/di/v2"
 )
@@ -37,6 +39,9 @@ func startUp(ctx context.Context, svc system.Service) error {
 			reg := registry.New()
 
 			if err := registrations(reg); err != nil {
+				return nil, err
+			}
+			if err := customerpb.Registrations(reg); err != nil {
 				return nil, err
 			}
 			if err := orderpb.Registrations(reg); err != nil {
@@ -163,6 +168,19 @@ func startUp(ctx context.Context, svc system.Service) error {
 				nil
 		},
 	})
+	builder.Add(di.Def{
+		Name:  constants.ReplyHandlersKey,
+		Scope: di.Request,
+		Build: func(c di.Container) (interface{}, error) {
+			return handlers.NewReplyHandlers(
+					c.Get(constants.RegistryKey).(registry.Registry),
+					c.Get(constants.OrchestratorKey).(sec.Orchestrator[*models.CreateOrderData]),
+					tm.InboxHandler(c.Get(constants.InboxStoreKey).(tm.InboxStore)),
+				),
+				nil
+		},
+	})
+	outboxProcessor := tm.NewOutboxProcessor(kafkaProducer, mysql_internal.NewOutboxStore(svc.DB()))
 
 	container := builder.Build()
 
@@ -170,8 +188,21 @@ func startUp(ctx context.Context, svc system.Service) error {
 	if err := handlers.RegisterIntegrationEventHandlers(container, svc.DB()); err != nil {
 		return err
 	}
+	if err := handlers.RegisterReplyHandlers(container, svc.DB()); err != nil {
+		return err
+	}
+	startOutboxProcessor(ctx, outboxProcessor, svc.Logger())
 
 	return nil
+}
+
+func startOutboxProcessor(ctx context.Context, outboxProcessor tm.OutboxProcessor, log logger.Logger) {
+	go func() {
+		err := outboxProcessor.Start(ctx)
+		if err != nil {
+			log.Err("customer outbox processor encountered an error", err)
+		}
+	}()
 }
 
 func registrations(reg registry.Registry) (err error) {
