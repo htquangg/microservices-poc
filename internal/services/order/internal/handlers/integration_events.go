@@ -25,15 +25,14 @@ func NewIntegrationEventHandlers(reg registry.Registry, app *application.Applica
 	}, mws...)
 }
 
-func RegisterIntegrationEventHandlers(container di.Container, db database.DB) error {
+func RegisterIntegrationEventHandlers(ctn di.Container, db database.DB) error {
 	rawMsgHandler := am.MessageHandlerFunc(func(ctx context.Context, msg am.IncomingMessage) error {
-		ctx = container.Scoped(ctx)
 		return db.WithTx(ctx, func(ctx context.Context) error {
-			return di.Get(ctx, constants.IntegrationEventHandlersKey).(am.MessageHandler).HandleMessage(ctx, msg)
+			return ctn.Get(constants.IntegrationEventHandlersKey).(am.MessageHandler).HandleMessage(ctx, msg)
 		})
 	})
 
-	subsciber := container.Get(constants.MessageSubscriberKey).(am.MessageSubscriber)
+	subsciber := ctn.Get(constants.MessageSubscriberKey).(am.MessageSubscriber)
 
 	return registerIntegrationEventHandlers(subsciber, rawMsgHandler)
 }

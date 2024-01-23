@@ -54,53 +54,53 @@ func startUp(ctx context.Context, svc system.Service) error {
 	})
 	builder.Add(di.Def{
 		Name:  constants.AggregateStoreKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return es.AggregateStoreWithMiddleware(
 				mysql_internal.NewEventStore(
 					svc.DB(),
-					c.Get(constants.RegistryKey).(registry.Registry),
+					ctn.Get(constants.RegistryKey).(registry.Registry),
 				),
 				mysql_internal.NewSnapshotStore(
 					svc.DB(),
-					c.Get(constants.RegistryKey).(registry.Registry),
+					ctn.Get(constants.RegistryKey).(registry.Registry),
 				),
 			), nil
 		},
 	})
 	builder.Add(di.Def{
 		Name:  constants.StoreRepoKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return mysql.NewStoreRepository(svc.DB()), nil
 		},
 	})
 	builder.Add(di.Def{
 		Name:  constants.StoreESRepoKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return es.NewAggregateRepository[*domain.StoreES](
 				domain.StoreAggregate,
-				c.Get(constants.RegistryKey).(registry.Registry),
-				c.Get(constants.AggregateStoreKey).(es.AggregateStore),
+				ctn.Get(constants.RegistryKey).(registry.Registry),
+				ctn.Get(constants.AggregateStoreKey).(es.AggregateStore),
 			), nil
 		},
 	})
 	builder.Add(di.Def{
 		Name:  constants.ProductRepoKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return mysql.NewProductRepository(svc.DB()), nil
 		},
 	})
 	builder.Add(di.Def{
 		Name:  constants.ProductESRepoKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return es.NewAggregateRepository[*domain.ProductES](
 				domain.ProductAggregate,
-				c.Get(constants.RegistryKey).(registry.Registry),
-				c.Get(constants.AggregateStoreKey).(es.AggregateStore),
+				ctn.Get(constants.RegistryKey).(registry.Registry),
+				ctn.Get(constants.AggregateStoreKey).(es.AggregateStore),
 			), nil
 		},
 	})
@@ -111,7 +111,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 	}(ctx)
 	builder.Add(di.Def{
 		Name:  constants.MessagePublisherKey,
-		Scope: di.Request,
+		Scope: di.App,
 		Build: func(_ di.Container) (interface{}, error) {
 			outboxRepo := mysql_internal.NewOutboxStore(svc.DB())
 			return am.NewMessagePublisher(kafkaProducer, tm.OutboxPublisher(outboxRepo)), nil
@@ -119,11 +119,11 @@ func startUp(ctx context.Context, svc system.Service) error {
 	})
 	builder.Add(di.Def{
 		Name:  constants.EventPublisherKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return am.NewEventPublisher(
-				c.Get(constants.RegistryKey).(registry.Registry),
-				c.Get(constants.MessagePublisherKey).(am.MessagePublisher),
+				ctn.Get(constants.RegistryKey).(registry.Registry),
+				ctn.Get(constants.MessagePublisherKey).(am.MessagePublisher),
 			), nil
 		},
 	})
@@ -131,12 +131,12 @@ func startUp(ctx context.Context, svc system.Service) error {
 	// setup application
 	builder.Add(di.Def{
 		Name:  constants.ApplicationKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
-			domainDispatcher := c.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.Event])
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			domainDispatcher := ctn.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.Event])
 			return application.New(
-					c.Get(constants.StoreESRepoKey).(domain.StoreESRepository),
-					c.Get(constants.ProductESRepoKey).(domain.ProductESRepository),
+					ctn.Get(constants.StoreESRepoKey).(domain.StoreESRepository),
+					ctn.Get(constants.ProductESRepoKey).(domain.ProductESRepository),
 					domainDispatcher,
 					svc.Logger(),
 				),
@@ -145,45 +145,45 @@ func startUp(ctx context.Context, svc system.Service) error {
 	})
 	builder.Add(di.Def{
 		Name:  constants.StoreHandlersKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return handlers.NewStoreHandlers(
-					c.Get(constants.StoreRepoKey).(domain.StoreRepository),
+					ctn.Get(constants.StoreRepoKey).(domain.StoreRepository),
 				),
 				nil
 		},
 	})
 	builder.Add(di.Def{
 		Name:  constants.ProductHandlersKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return handlers.NewProductHandlers(
-					c.Get(constants.ProductRepoKey).(domain.ProductRepository),
+					ctn.Get(constants.ProductRepoKey).(domain.ProductRepository),
 				),
 				nil
 		},
 	})
 	builder.Add(di.Def{
 		Name:  constants.DomainEventHandlersKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return handlers.NewDomainEventHandlers(
-					c.Get(constants.EventPublisherKey).(am.EventPublisher),
+					ctn.Get(constants.EventPublisherKey).(am.EventPublisher),
 				),
 				nil
 		},
 	})
 	outboxProcessor := tm.NewOutboxProcessor(kafkaProducer, mysql_internal.NewOutboxStore(svc.DB()))
 
-	container := builder.Build()
+	ctn := builder.Build()
 
 	// setup driver adapters
-	if err := grpc.RegisterServer(container, svc.DB(), svc.RPC()); err != nil {
+	if err := grpc.RegisterServer(ctn, svc.DB(), svc.RPC()); err != nil {
 		return err
 	}
-	handlers.RegisterDomainEventHandlers(container)
-	handlers.RegisterStoreHandlers(container)
-	handlers.RegisterProductHandlers(container)
+	handlers.RegisterDomainEventHandlers(ctn)
+	handlers.RegisterStoreHandlers(ctn)
+	handlers.RegisterProductHandlers(ctn)
 	startOutboxProcessor(ctx, outboxProcessor, svc.Logger())
 
 	return nil

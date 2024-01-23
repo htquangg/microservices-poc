@@ -19,11 +19,11 @@ type storeEndpoints struct {
 	registerCustomerEndpoint endpoint.Endpoint
 }
 
-func makeStoreEndpoints(c di.Container) storeEndpoints {
+func makeStoreEndpoints(ctn di.Container) storeEndpoints {
 	return storeEndpoints{
-		createStoreEndpoint:      makeCreateStoreEndpoint(c),
-		rebrandStoreEndpoint:     makeRebrandStoreEndpoint(c),
-		registerCustomerEndpoint: makeAddProductEndpoint(c),
+		createStoreEndpoint:      makeCreateStoreEndpoint(ctn),
+		rebrandStoreEndpoint:     makeRebrandStoreEndpoint(ctn),
+		registerCustomerEndpoint: makeAddProductEndpoint(ctn),
 	}
 }
 
@@ -55,9 +55,9 @@ func encodeCreateStoreResponse(_ context.Context, response interface{}) (interfa
 	}, resp.Err
 }
 
-func makeCreateStoreEndpoint(c di.Container) endpoint.Endpoint {
+func makeCreateStoreEndpoint(ctn di.Container) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		app := di.Get(ctx, constants.ApplicationKey).(*application.Application)
+		app := ctn.Get(constants.ApplicationKey).(*application.Application)
 
 		req := request.(createStoreRequest)
 		err := app.Commands.CreateStoreHandler.Handle(ctx, commands.CreateStore{
@@ -98,9 +98,9 @@ func encodeRebrandStoreResponse(_ context.Context, response interface{}) (interf
 	return &storepb.RebrandStoreResponse{}, resp.Err
 }
 
-func makeRebrandStoreEndpoint(c di.Container) endpoint.Endpoint {
+func makeRebrandStoreEndpoint(ctn di.Container) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		app := di.Get(ctx, constants.ApplicationKey).(*application.Application)
+		app := ctn.Get(constants.ApplicationKey).(*application.Application)
 
 		req := request.(rebrandStoreRequest)
 		err := app.Commands.RebrandStoreHandler.Handle(ctx, commands.RebrandStore{
@@ -148,9 +148,9 @@ func encodeAddProductResponse(_ context.Context, response interface{}) (interfac
 	}, resp.Err
 }
 
-func makeAddProductEndpoint(c di.Container) endpoint.Endpoint {
+func makeAddProductEndpoint(ctn di.Container) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		app := di.Get(ctx, constants.ApplicationKey).(*application.Application)
+		app := ctn.Get(constants.ApplicationKey).(*application.Application)
 
 		id := uid.GetManager().ID()
 

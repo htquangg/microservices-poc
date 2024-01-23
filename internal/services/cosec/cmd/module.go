@@ -60,16 +60,16 @@ func startUp(ctx context.Context, svc system.Service) error {
 	})
 	builder.Add(di.Def{
 		Name:  constants.AggregateStoreKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return es.AggregateStoreWithMiddleware(
 				mysql_internal.NewEventStore(
 					svc.DB(),
-					c.Get(constants.RegistryKey).(registry.Registry),
+					ctn.Get(constants.RegistryKey).(registry.Registry),
 				),
 				mysql_internal.NewSnapshotStore(
 					svc.DB(),
-					c.Get(constants.RegistryKey).(registry.Registry),
+					ctn.Get(constants.RegistryKey).(registry.Registry),
 				),
 			), nil
 		},
@@ -81,7 +81,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 	}(ctx)
 	builder.Add(di.Def{
 		Name:  constants.MessagePublisherKey,
-		Scope: di.Request,
+		Scope: di.App,
 		Build: func(_ di.Container) (interface{}, error) {
 			outboxRepo := mysql_internal.NewOutboxStore(svc.DB())
 			return am.NewMessagePublisher(kafkaProducer, tm.OutboxPublisher(outboxRepo)), nil
@@ -108,30 +108,30 @@ func startUp(ctx context.Context, svc system.Service) error {
 	})
 	builder.Add(di.Def{
 		Name:  constants.CommandPublisherKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return am.NewCommandPublisher(
-				c.Get(constants.RegistryKey).(registry.Registry),
-				c.Get(constants.MessagePublisherKey).(am.MessagePublisher),
+				ctn.Get(constants.RegistryKey).(registry.Registry),
+				ctn.Get(constants.MessagePublisherKey).(am.MessagePublisher),
 			), nil
 		},
 	})
 	builder.Add(di.Def{
 		Name:  constants.EventPublisherKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return am.NewEventPublisher(
-				c.Get(constants.RegistryKey).(registry.Registry),
-				c.Get(constants.MessagePublisherKey).(am.MessagePublisher),
+				ctn.Get(constants.RegistryKey).(registry.Registry),
+				ctn.Get(constants.MessagePublisherKey).(am.MessagePublisher),
 			), nil
 		},
 	})
 	builder.Add(di.Def{
 		Name:  constants.SagaStoreKey,
 		Scope: di.App,
-		Build: func(c di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (interface{}, error) {
 			return sec.NewSagaRepository[*models.CreateOrderData](
-				c.Get(constants.RegistryKey).(registry.Registry),
+				ctn.Get(constants.RegistryKey).(registry.Registry),
 				mysql_internal.NewSagaStore(svc.DB()),
 			), nil
 		},
@@ -139,7 +139,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 	builder.Add(di.Def{
 		Name:  constants.SagaKey,
 		Scope: di.App,
-		Build: func(c di.Container) (interface{}, error) {
+		Build: func(ctn di.Container) (interface{}, error) {
 			return saga.NewCreateOrderSaga(), nil
 		},
 	})
@@ -147,35 +147,35 @@ func startUp(ctx context.Context, svc system.Service) error {
 	// setup application
 	builder.Add(di.Def{
 		Name:  constants.OrchestratorKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return sec.NewOrchestrator[*models.CreateOrderData](
-				c.Get(constants.SagaKey).(sec.Saga[*models.CreateOrderData]),
-				c.Get(constants.SagaStoreKey).(*sec.SagaRepository[*models.CreateOrderData]),
-				c.Get(constants.CommandPublisherKey).(am.CommandPublisher),
+				ctn.Get(constants.SagaKey).(sec.Saga[*models.CreateOrderData]),
+				ctn.Get(constants.SagaStoreKey).(*sec.SagaRepository[*models.CreateOrderData]),
+				ctn.Get(constants.CommandPublisherKey).(am.CommandPublisher),
 			), nil
 		},
 	})
 	builder.Add(di.Def{
 		Name:  constants.IntegrationEventHandlersKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return handlers.NewIntegrationEventHandlers(
-					c.Get(constants.RegistryKey).(registry.Registry),
-					c.Get(constants.OrchestratorKey).(sec.Orchestrator[*models.CreateOrderData]),
-					tm.InboxHandler(c.Get(constants.InboxStoreKey).(tm.InboxStore)),
+					ctn.Get(constants.RegistryKey).(registry.Registry),
+					ctn.Get(constants.OrchestratorKey).(sec.Orchestrator[*models.CreateOrderData]),
+					tm.InboxHandler(ctn.Get(constants.InboxStoreKey).(tm.InboxStore)),
 				),
 				nil
 		},
 	})
 	builder.Add(di.Def{
 		Name:  constants.ReplyHandlersKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return handlers.NewReplyHandlers(
-					c.Get(constants.RegistryKey).(registry.Registry),
-					c.Get(constants.OrchestratorKey).(sec.Orchestrator[*models.CreateOrderData]),
-					tm.InboxHandler(c.Get(constants.InboxStoreKey).(tm.InboxStore)),
+					ctn.Get(constants.RegistryKey).(registry.Registry),
+					ctn.Get(constants.OrchestratorKey).(sec.Orchestrator[*models.CreateOrderData]),
+					tm.InboxHandler(ctn.Get(constants.InboxStoreKey).(tm.InboxStore)),
 				),
 				nil
 		},

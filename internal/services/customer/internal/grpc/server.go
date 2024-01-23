@@ -8,11 +8,11 @@ import (
 )
 
 func RegisterServer(
-	c di.Container,
+	ctn di.Container,
 	db database.DB,
 	registrar grpc.ServiceRegistrar,
 ) error {
-	if err := registerCustomerServer(c, db, registrar); err != nil {
+	if err := registerCustomerServer(ctn, db, registrar); err != nil {
 		return err
 	}
 

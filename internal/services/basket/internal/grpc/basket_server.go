@@ -16,8 +16,8 @@ var _ basketpb.BasketServiceServer = (*basketServer)(nil)
 type basketServer struct {
 	basketpb.UnimplementedBasketServiceServer
 
-	c  di.Container
-	db database.DB
+	ctn di.Container
+	db  database.DB
 
 	startBasket    grpc_transport.Handler
 	cancelBasket   grpc_transport.Handler
@@ -27,15 +27,15 @@ type basketServer struct {
 }
 
 func registerBasketServer(
-	c di.Container,
+	ctn di.Container,
 	db database.DB,
 	registrar grpc.ServiceRegistrar,
 ) error {
-	endpoints := makeBasketEndpoints(c)
+	endpoints := makeBasketEndpoints(ctn)
 
 	basketpb.RegisterBasketServiceServer(registrar, basketServer{
-		c:  c,
-		db: db,
+		ctn: ctn,
+		db:  db,
 		startBasket: grpc_transport.NewServer(
 			endpoints.startBasketEndpoint,
 			decodeStartBasketRequest,
@@ -70,8 +70,6 @@ func (s basketServer) StartBasket(
 	ctx context.Context,
 	request *basketpb.StartBasketRequest,
 ) (*basketpb.StartBasketResponse, error) {
-	ctx = s.c.Scoped(ctx)
-
 	var resp interface{}
 
 	err := s.db.WithTx(ctx, func(ctx context.Context) (err error) {
@@ -89,8 +87,6 @@ func (s basketServer) CancelBasket(
 	ctx context.Context,
 	request *basketpb.CancelBasketRequest,
 ) (*basketpb.CancelBasketResponse, error) {
-	ctx = s.c.Scoped(ctx)
-
 	var resp interface{}
 
 	err := s.db.WithTx(ctx, func(ctx context.Context) (err error) {
@@ -108,8 +104,6 @@ func (s basketServer) CheckoutBasket(
 	ctx context.Context,
 	request *basketpb.CheckoutBasketRequest,
 ) (*basketpb.CheckoutBasketResponse, error) {
-	ctx = s.c.Scoped(ctx)
-
 	var resp interface{}
 
 	err := s.db.WithTx(ctx, func(ctx context.Context) (err error) {
@@ -127,8 +121,6 @@ func (s basketServer) AddItem(
 	ctx context.Context,
 	request *basketpb.AddItemRequest,
 ) (*basketpb.AddItemResponse, error) {
-	ctx = s.c.Scoped(ctx)
-
 	var resp interface{}
 
 	err := s.db.WithTx(ctx, func(ctx context.Context) (err error) {
@@ -146,8 +138,6 @@ func (s basketServer) RemoveItem(
 	ctx context.Context,
 	request *basketpb.RemoveItemRequest,
 ) (*basketpb.RemoveItemResponse, error) {
-	ctx = s.c.Scoped(ctx)
-
 	var resp interface{}
 
 	err := s.db.WithTx(ctx, func(ctx context.Context) (err error) {

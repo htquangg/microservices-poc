@@ -16,19 +16,19 @@ type domainHandlers[T ddd.Event] struct {
 }
 
 func NewDomainEventHandlers(publisher am.EventPublisher) ddd.EventHandler[ddd.Event] {
-	return domainHandlers[ddd.Event]{
+	return &domainHandlers[ddd.Event]{
 		publisher: publisher,
 	}
 }
 
-func RegisterDomainEventHandlers(container di.Container) {
+func RegisterDomainEventHandlers(ctn di.Container) {
 	handlers := ddd.EventHandlerFunc[ddd.Event](func(ctx context.Context, event ddd.Event) error {
-		domainHandlers := di.Get(ctx, constants.DomainEventHandlersKey).(ddd.EventHandler[ddd.Event])
+		domainHandlers := ctn.Get(constants.DomainEventHandlersKey).(ddd.EventHandler[ddd.Event])
 
 		return domainHandlers.HandleEvent(ctx, event)
 	})
 
-	subscriber := container.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.Event])
+	subscriber := ctn.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.Event])
 
 	registerDomainEventHandlers(subscriber, handlers)
 }
@@ -43,7 +43,7 @@ func registerDomainEventHandlers(subscriber ddd.EventSubscriber[ddd.Event], hand
 	)
 }
 
-func (h domainHandlers[T]) HandleEvent(ctx context.Context, event T) error {
+func (h *domainHandlers[T]) HandleEvent(ctx context.Context, event T) error {
 	switch event.EventName() {
 	case domain.OrderCreatedEvent:
 		return h.onOrderCreated(ctx, event)
@@ -60,7 +60,7 @@ func (h domainHandlers[T]) HandleEvent(ctx context.Context, event T) error {
 	return nil
 }
 
-func (h domainHandlers[T]) onOrderCreated(ctx context.Context, event T) error {
+func (h *domainHandlers[T]) onOrderCreated(ctx context.Context, event T) error {
 	payload := event.Payload().(*domain.OrderES)
 	items := make([]*orderpb.OrderCreated_Item, 0, len(payload.Items()))
 	for _, item := range payload.Items() {
@@ -86,7 +86,7 @@ func (h domainHandlers[T]) onOrderCreated(ctx context.Context, event T) error {
 	)
 }
 
-func (h domainHandlers[T]) onOrderRejected(ctx context.Context, event T) error {
+func (h *domainHandlers[T]) onOrderRejected(ctx context.Context, event T) error {
 	payload := event.Payload().(*domain.OrderES)
 	return h.publisher.Publish(ctx,
 		orderpb.OrderAggregateChannel,

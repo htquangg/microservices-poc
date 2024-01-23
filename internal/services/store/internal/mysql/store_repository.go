@@ -16,13 +16,13 @@ type StoreRepository struct {
 
 var _ domain.StoreRepository = (*StoreRepository)(nil)
 
-func NewStoreRepository(db database.DB) StoreRepository {
-	return StoreRepository{
+func NewStoreRepository(db database.DB) *StoreRepository {
+	return &StoreRepository{
 		db: db,
 	}
 }
 
-func (r StoreRepository) AddStore(ctx context.Context, id string, name string) error {
+func (r *StoreRepository) AddStore(ctx context.Context, id string, name string) error {
 	query := r.table(`
 		INSERT INTO %s (id, name)
 		VALUES (?, ?)
@@ -33,7 +33,7 @@ func (r StoreRepository) AddStore(ctx context.Context, id string, name string) e
 	return err
 }
 
-func (r StoreRepository) RenameStore(ctx context.Context, id string, name string) error {
+func (r *StoreRepository) RenameStore(ctx context.Context, id string, name string) error {
 	query := r.table(`
 		UPDATE %s
 		SET name = ? where id = ?
@@ -44,7 +44,7 @@ func (r StoreRepository) RenameStore(ctx context.Context, id string, name string
 	return err
 }
 
-func (r StoreRepository) FindOneByID(ctx context.Context, id string) (*domain.Store, error) {
+func (r *StoreRepository) FindOneByID(ctx context.Context, id string) (*domain.Store, error) {
 	query := r.table(`
 		SELECT id, name FROM %s
 		WHERE id = ?
@@ -65,7 +65,7 @@ func (r StoreRepository) FindOneByID(ctx context.Context, id string) (*domain.St
 	}, nil
 }
 
-func (r StoreRepository) FindAll(ctx context.Context) ([]*domain.Store, error) {
+func (r *StoreRepository) FindAll(ctx context.Context) ([]*domain.Store, error) {
 	panic("unimplemented")
 }
 

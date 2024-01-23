@@ -18,21 +18,25 @@ type commandHandlers struct {
 	app *application.Application
 }
 
-func NewCommandHandlers(reg registry.Registry, replyPublisher am.ReplyPublisher, app *application.Application, mws ...am.MessageHandlerMiddleware) am.MessageHandler {
-	return am.NewCommandHandler(reg, replyPublisher, commandHandlers{
+func NewCommandHandlers(
+	reg registry.Registry,
+	replyPublisher am.ReplyPublisher,
+	app *application.Application,
+	mws ...am.MessageHandlerMiddleware,
+) am.MessageHandler {
+	return am.NewCommandHandler(reg, replyPublisher, &commandHandlers{
 		app: app,
 	}, mws...)
 }
 
-func RegisterCommandHandlers(container di.Container, db database.DB) error {
+func RegisterCommandHandlers(ctn di.Container, db database.DB) error {
 	rawMsgHandler := am.MessageHandlerFunc(func(ctx context.Context, msg am.IncomingMessage) error {
-		ctx = container.Scoped(ctx)
 		return db.WithTx(ctx, func(ctx context.Context) error {
-			return di.Get(ctx, constants.CommandHandlersKey).(am.MessageHandler).HandleMessage(ctx, msg)
+			return ctn.Get(constants.CommandHandlersKey).(am.MessageHandler).HandleMessage(ctx, msg)
 		})
 	})
 
-	subsciber := container.Get(constants.MessageSubscriberKey).(am.MessageSubscriber)
+	subsciber := ctn.Get(constants.MessageSubscriberKey).(am.MessageSubscriber)
 
 	return registerCommandHandlers(subsciber, rawMsgHandler)
 }
@@ -47,7 +51,7 @@ func registerCommandHandlers(subscriber am.MessageSubscriber, handlers am.Messag
 	return nil
 }
 
-func (h commandHandlers) HandleCommand(ctx context.Context, cmd ddd.Command) (ddd.Reply, error) {
+func (h *commandHandlers) HandleCommand(ctx context.Context, cmd ddd.Command) (ddd.Reply, error) {
 	switch cmd.CommandName() {
 	case customerpb.AuthorizeCustomerCommand:
 		return h.doAuthorizeCustomer(ctx, cmd)
@@ -56,7 +60,7 @@ func (h commandHandlers) HandleCommand(ctx context.Context, cmd ddd.Command) (dd
 	return nil, nil
 }
 
-func (h commandHandlers) doAuthorizeCustomer(ctx context.Context, cmd ddd.Command) (ddd.Reply, error) {
+func (h *commandHandlers) doAuthorizeCustomer(ctx context.Context, cmd ddd.Command) (ddd.Reply, error) {
 	payload := cmd.Payload().(*customerpb.AuthorizeCustomer)
 
 	return nil, h.app.Commands.AuthorizeCustomerHandler.Handle(ctx, commands.AuthorizeCustomer{

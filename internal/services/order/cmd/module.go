@@ -60,16 +60,16 @@ func startUp(ctx context.Context, svc system.Service) error {
 	})
 	builder.Add(di.Def{
 		Name:  constants.AggregateStoreKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return es.AggregateStoreWithMiddleware(
 				mysql_internal.NewEventStore(
 					svc.DB(),
-					c.Get(constants.RegistryKey).(registry.Registry),
+					ctn.Get(constants.RegistryKey).(registry.Registry),
 				),
 				mysql_internal.NewSnapshotStore(
 					svc.DB(),
-					c.Get(constants.RegistryKey).(registry.Registry),
+					ctn.Get(constants.RegistryKey).(registry.Registry),
 				),
 			), nil
 		},
@@ -81,7 +81,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 	}(ctx)
 	builder.Add(di.Def{
 		Name:  constants.MessagePublisherKey,
-		Scope: di.Request,
+		Scope: di.App,
 		Build: func(_ di.Container) (interface{}, error) {
 			outboxRepo := mysql_internal.NewOutboxStore(svc.DB())
 			return am.NewMessagePublisher(kafkaProducer, tm.OutboxPublisher(outboxRepo)), nil
@@ -108,22 +108,22 @@ func startUp(ctx context.Context, svc system.Service) error {
 	})
 	builder.Add(di.Def{
 		Name:  constants.EventPublisherKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return am.NewEventPublisher(
-				c.Get(constants.RegistryKey).(registry.Registry),
-				c.Get(constants.MessagePublisherKey).(am.MessagePublisher),
+				ctn.Get(constants.RegistryKey).(registry.Registry),
+				ctn.Get(constants.MessagePublisherKey).(am.MessagePublisher),
 			), nil
 		},
 	})
 	builder.Add(di.Def{
 		Name:  constants.OrderESRepoKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return es.NewAggregateRepository[*domain.OrderES](
 				domain.OrderAggregate,
-				c.Get(constants.RegistryKey).(registry.Registry),
-				c.Get(constants.AggregateStoreKey).(es.AggregateStore),
+				ctn.Get(constants.RegistryKey).(registry.Registry),
+				ctn.Get(constants.AggregateStoreKey).(es.AggregateStore),
 			), nil
 		},
 	})
@@ -131,11 +131,11 @@ func startUp(ctx context.Context, svc system.Service) error {
 	// setup application
 	builder.Add(di.Def{
 		Name:  constants.ApplicationKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
-			domainDispatcher := c.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.Event])
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			domainDispatcher := ctn.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.Event])
 			return application.New(
-					c.Get(constants.OrderESRepoKey).(domain.OrderESRepository),
+					ctn.Get(constants.OrderESRepoKey).(domain.OrderESRepository),
 					domainDispatcher,
 					svc.Logger(),
 				),
@@ -144,19 +144,19 @@ func startUp(ctx context.Context, svc system.Service) error {
 	})
 	builder.Add(di.Def{
 		Name:  constants.DomainEventHandlersKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
-			return handlers.NewDomainEventHandlers(c.Get(constants.EventPublisherKey).(am.EventPublisher)), nil
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return handlers.NewDomainEventHandlers(ctn.Get(constants.EventPublisherKey).(am.EventPublisher)), nil
 		},
 	})
 	builder.Add(di.Def{
 		Name:  constants.IntegrationEventHandlersKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return handlers.NewIntegrationEventHandlers(
-					c.Get(constants.RegistryKey).(registry.Registry),
-					c.Get(constants.ApplicationKey).(*application.Application),
-					tm.InboxHandler(c.Get(constants.InboxStoreKey).(tm.InboxStore)),
+					ctn.Get(constants.RegistryKey).(registry.Registry),
+					ctn.Get(constants.ApplicationKey).(*application.Application),
+					tm.InboxHandler(ctn.Get(constants.InboxStoreKey).(tm.InboxStore)),
 				),
 				nil
 		},

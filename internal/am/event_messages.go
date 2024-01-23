@@ -51,13 +51,13 @@ func NewEventPublisher(
 	msgPublisher MessagePublisher,
 	mws ...MessagePublisherMiddleware,
 ) EventPublisher {
-	return eventPublisher{
+	return &eventPublisher{
 		reg:       reg,
 		publisher: MessagePublisherWithMiddleware(msgPublisher, mws...),
 	}
 }
 
-func (p eventPublisher) Publish(ctx context.Context, topicName string, event ddd.Event) error {
+func (p *eventPublisher) Publish(ctx context.Context, topicName string, event ddd.Event) error {
 	payload, err := p.reg.Serialize(event.EventName(), event.Payload())
 	if err != nil {
 		return err
@@ -143,13 +143,13 @@ func NewEventHandler(
 	handler ddd.EventHandler[ddd.Event],
 	mws ...MessageHandlerMiddleware,
 ) MessageHandler {
-	return MessageHandlerWithMiddleware(eventMessageHandler{
+	return MessageHandlerWithMiddleware(&eventMessageHandler{
 		reg:     reg,
 		handler: handler,
 	}, mws...)
 }
 
-func (h eventMessageHandler) HandleMessage(ctx context.Context, msg IncomingMessage) error {
+func (h *eventMessageHandler) HandleMessage(ctx context.Context, msg IncomingMessage) error {
 	var eventData proto_am.EventMessageData
 
 	err := proto.Unmarshal(msg.Data(), &eventData)

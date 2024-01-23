@@ -42,8 +42,8 @@ func startUp(ctx context.Context, svc system.Service) error {
 	})
 	builder.Add(di.Def{
 		Name:  constants.CustomerRepoKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return mysql.NewCustomerRepository(svc.DB()), nil
 		},
 	})
@@ -61,7 +61,7 @@ func startUp(ctx context.Context, svc system.Service) error {
 	}(ctx)
 	builder.Add(di.Def{
 		Name:  constants.MessagePublisherKey,
-		Scope: di.Request,
+		Scope: di.App,
 		Build: func(_ di.Container) (interface{}, error) {
 			outboxRepo := mysql_internal.NewOutboxStore(svc.DB())
 			return am.NewMessagePublisher(kafkaProducer, tm.OutboxPublisher(outboxRepo)), nil
@@ -88,22 +88,22 @@ func startUp(ctx context.Context, svc system.Service) error {
 	})
 	builder.Add(di.Def{
 		Name:  constants.EventPublisherKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return am.NewEventPublisher(
-				c.Get(constants.RegistryKey).(registry.Registry),
-				c.Get(constants.MessagePublisherKey).(am.MessagePublisher),
+				ctn.Get(constants.RegistryKey).(registry.Registry),
+				ctn.Get(constants.MessagePublisherKey).(am.MessagePublisher),
 			), nil
 		},
 	})
 	builder.Add(
 		di.Def{
 			Name:  constants.ReplyPublisherKey,
-			Scope: di.Request,
-			Build: func(c di.Container) (interface{}, error) {
+			Scope: di.App,
+			Build: func(ctn di.Container) (interface{}, error) {
 				return am.NewReplyPublisher(
-					c.Get(constants.RegistryKey).(registry.Registry),
-					c.Get(constants.MessagePublisherKey).(am.MessagePublisher),
+					ctn.Get(constants.RegistryKey).(registry.Registry),
+					ctn.Get(constants.MessagePublisherKey).(am.MessagePublisher),
 				), nil
 			},
 		})
@@ -111,11 +111,11 @@ func startUp(ctx context.Context, svc system.Service) error {
 	// setup application
 	builder.Add(di.Def{
 		Name:  constants.ApplicationKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
-			domainDispatcher := c.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.AggregateEvent])
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			domainDispatcher := ctn.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.AggregateEvent])
 			return application.New(
-				c.Get(constants.CustomerRepoKey).(mysql.CustomerRepository),
+				ctn.Get(constants.CustomerRepoKey).(mysql.CustomerRepository),
 				domainDispatcher,
 				svc.Logger(),
 			), nil
@@ -123,33 +123,33 @@ func startUp(ctx context.Context, svc system.Service) error {
 	})
 	builder.Add(di.Def{
 		Name:  constants.DomainEventHandlersKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
-			return handlers.NewDomainEventHandlers(c.Get(constants.EventPublisherKey).(am.EventPublisher)), nil
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return handlers.NewDomainEventHandlers(ctn.Get(constants.EventPublisherKey).(am.EventPublisher)), nil
 		},
 	})
 	builder.Add(di.Def{
 		Name:  constants.CommandHandlersKey,
-		Scope: di.Request,
-		Build: func(c di.Container) (interface{}, error) {
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
 			return handlers.NewCommandHandlers(
-				c.Get(constants.RegistryKey).(registry.Registry),
-				c.Get(constants.ReplyPublisherKey).(am.ReplyPublisher),
-				c.Get(constants.ApplicationKey).(*application.Application),
-				tm.InboxHandler(c.Get(constants.InboxStoreKey).(tm.InboxStore)),
+				ctn.Get(constants.RegistryKey).(registry.Registry),
+				ctn.Get(constants.ReplyPublisherKey).(am.ReplyPublisher),
+				ctn.Get(constants.ApplicationKey).(*application.Application),
+				tm.InboxHandler(ctn.Get(constants.InboxStoreKey).(tm.InboxStore)),
 			), nil
 		},
 	})
 	outboxProcessor := tm.NewOutboxProcessor(kafkaProducer, mysql_internal.NewOutboxStore(svc.DB()))
 
-	container := builder.Build()
+	ctn := builder.Build()
 
 	// setup driver adapters
-	if err := grpc.RegisterServer(container, svc.DB(), svc.RPC()); err != nil {
+	if err := grpc.RegisterServer(ctn, svc.DB(), svc.RPC()); err != nil {
 		return err
 	}
-	handlers.RegisterDomainEventHandlers(container)
-	if err := handlers.RegisterCommandHandlers(container, svc.DB()); err != nil {
+	handlers.RegisterDomainEventHandlers(ctn)
+	if err := handlers.RegisterCommandHandlers(ctn, svc.DB()); err != nil {
 		return err
 	}
 	startOutboxProcessor(ctx, outboxProcessor, svc.Logger())

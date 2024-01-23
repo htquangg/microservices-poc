@@ -21,14 +21,14 @@ func NewDomainEventHandlers(publisher am.EventPublisher) ddd.EventHandler[ddd.Ev
 	}
 }
 
-func RegisterDomainEventHandlers(container di.Container) {
+func RegisterDomainEventHandlers(ctn di.Container) {
 	handlers := ddd.EventHandlerFunc[ddd.Event](func(ctx context.Context, event ddd.Event) error {
-		domainHandlers := di.Get(ctx, constants.DomainEventHandlersKey).(ddd.EventHandler[ddd.Event])
+		domainHandlers := ctn.Get(constants.DomainEventHandlersKey).(ddd.EventHandler[ddd.Event])
 
 		return domainHandlers.HandleEvent(ctx, event)
 	})
 
-	subscriber := container.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.Event])
+	subscriber := ctn.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.Event])
 
 	registerDomainEventHandlers(subscriber, handlers)
 }

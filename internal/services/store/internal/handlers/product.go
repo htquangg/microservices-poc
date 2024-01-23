@@ -22,14 +22,14 @@ func NewProductHandlers(productRepo domain.ProductRepository) ddd.EventHandler[d
 	}
 }
 
-func RegisterProductHandlers(container di.Container) {
+func RegisterProductHandlers(ctn di.Container) {
 	handlers := ddd.EventHandlerFunc[ddd.Event](func(ctx context.Context, event ddd.Event) error {
-		productHandlers := di.Get(ctx, constants.ProductHandlersKey).(ddd.EventHandler[ddd.Event])
+		productHandlers := ctn.Get(constants.ProductHandlersKey).(ddd.EventHandler[ddd.Event])
 
 		return productHandlers.HandleEvent(ctx, event)
 	})
 
-	subscriber := container.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.Event])
+	subscriber := ctn.Get(constants.DomainDispatcherKey).(*ddd.EventDispatcher[ddd.Event])
 
 	registerProductHandlers(subscriber, handlers)
 }

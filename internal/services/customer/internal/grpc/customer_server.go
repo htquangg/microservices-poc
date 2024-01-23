@@ -16,22 +16,22 @@ var _ customerpb.CustomerServiceServer = (*customerServer)(nil)
 type customerServer struct {
 	customerpb.UnimplementedCustomerServiceServer
 
-	c  di.Container
-	db database.DB
+	ctn di.Container
+	db  database.DB
 
 	registerCustomer grpc_transport.Handler
 }
 
 func registerCustomerServer(
-	c di.Container,
+	ctn di.Container,
 	db database.DB,
 	registrar grpc.ServiceRegistrar,
 ) error {
-	endpoints := makeCustomerEndpoints(c)
+	endpoints := makeCustomerEndpoints(ctn)
 
 	customerpb.RegisterCustomerServiceServer(registrar, customerServer{
-		c:  c,
-		db: db,
+		ctn: ctn,
+		db:  db,
 		registerCustomer: grpc_transport.NewServer(
 			endpoints.registerCustomerEndpoint,
 			decodeRegisterCustomerRequest,
@@ -46,8 +46,6 @@ func (s customerServer) RegisterCustomer(
 	ctx context.Context,
 	request *customerpb.RegisterCustomerRequest,
 ) (*customerpb.RegisterCustomerResponse, error) {
-	ctx = s.c.Scoped(ctx)
-
 	var resp interface{}
 
 	err := s.db.WithTx(ctx, func(ctx context.Context) (err error) {

@@ -21,13 +21,13 @@ type basketEndpoints struct {
 	removeItemEndpoint     endpoint.Endpoint
 }
 
-func makeBasketEndpoints(c di.Container) basketEndpoints {
+func makeBasketEndpoints(ctn di.Container) basketEndpoints {
 	return basketEndpoints{
-		startBasketEndpoint:    makeStartBasketEndpoint(c),
-		cancelBasketEndpoint:   makeCancelBasketEndpoint(c),
-		checkoutBasketEndpoint: makeCheckoutBasketEndpoint(c),
-		addItemEndpoint:        makeAddItemEndpoint(c),
-		removeItemEndpoint:     makeRemoveItemEndpoint(c),
+		startBasketEndpoint:    makeStartBasketEndpoint(ctn),
+		cancelBasketEndpoint:   makeCancelBasketEndpoint(ctn),
+		checkoutBasketEndpoint: makeCheckoutBasketEndpoint(ctn),
+		addItemEndpoint:        makeAddItemEndpoint(ctn),
+		removeItemEndpoint:     makeRemoveItemEndpoint(ctn),
 	}
 }
 
@@ -59,9 +59,9 @@ func encodeStartBasketResponse(_ context.Context, response interface{}) (interfa
 	}, resp.Err
 }
 
-func makeStartBasketEndpoint(c di.Container) endpoint.Endpoint {
+func makeStartBasketEndpoint(ctn di.Container) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		app := di.Get(ctx, constants.ApplicationKey).(*application.Application)
+		app := ctn.Get(constants.ApplicationKey).(*application.Application)
 
 		req := request.(startBasketRequest)
 		err := app.Commands.StartBasketHandler.Handle(ctx, commands.StartBasket{
@@ -99,9 +99,9 @@ func encodeCancelBasketResponse(_ context.Context, response interface{}) (interf
 	return &basketpb.CancelBasketResponse{}, resp.Err
 }
 
-func makeCancelBasketEndpoint(c di.Container) endpoint.Endpoint {
+func makeCancelBasketEndpoint(ctn di.Container) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		app := di.Get(ctx, constants.ApplicationKey).(*application.Application)
+		app := ctn.Get(constants.ApplicationKey).(*application.Application)
 
 		req := request.(cancelBasketRequest)
 		err := app.Commands.CancelBasketHandler.Handle(ctx, commands.CancelBasket{
@@ -139,9 +139,9 @@ func encodeCheckoutBasketResponse(_ context.Context, response interface{}) (inte
 	return &basketpb.CheckoutBasketResponse{}, resp.Err
 }
 
-func makeCheckoutBasketEndpoint(c di.Container) endpoint.Endpoint {
+func makeCheckoutBasketEndpoint(ctn di.Container) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		app := di.Get(ctx, constants.ApplicationKey).(*application.Application)
+		app := ctn.Get(constants.ApplicationKey).(*application.Application)
 
 		req := request.(checkoutBasketRequest)
 		err := app.Commands.CheckoutBasketHandler.Handle(ctx, commands.CheckoutBasket{
@@ -182,9 +182,9 @@ func encodeAddItemResponse(_ context.Context, response interface{}) (interface{}
 	return &basketpb.AddItemResponse{}, resp.Err
 }
 
-func makeAddItemEndpoint(c di.Container) endpoint.Endpoint {
+func makeAddItemEndpoint(ctn di.Container) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		app := di.Get(ctx, constants.ApplicationKey).(*application.Application)
+		app := ctn.Get(constants.ApplicationKey).(*application.Application)
 
 		req := request.(addItemRequest)
 		err := app.Commands.AddItemHandler.Handle(ctx, commands.AddItem{
@@ -226,9 +226,9 @@ func encodeRemoveItemResponse(_ context.Context, response interface{}) (interfac
 	return &basketpb.RemoveItemResponse{}, resp.Err
 }
 
-func makeRemoveItemEndpoint(c di.Container) endpoint.Endpoint {
+func makeRemoveItemEndpoint(ctn di.Container) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		app := di.Get(ctx, constants.ApplicationKey).(*application.Application)
+		app := ctn.Get(constants.ApplicationKey).(*application.Application)
 
 		req := request.(removeItemRequest)
 		err := app.Commands.RemoveItemHandler.Handle(ctx, commands.RemoveItem{

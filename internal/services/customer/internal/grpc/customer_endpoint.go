@@ -17,9 +17,9 @@ type customerEndpoints struct {
 	registerCustomerEndpoint endpoint.Endpoint
 }
 
-func makeCustomerEndpoints(c di.Container) customerEndpoints {
+func makeCustomerEndpoints(ctn di.Container) customerEndpoints {
 	return customerEndpoints{
-		registerCustomerEndpoint: makeRegisterCustomerEndpoint(c),
+		registerCustomerEndpoint: makeRegisterCustomerEndpoint(ctn),
 	}
 }
 
@@ -54,9 +54,9 @@ func encodeRegisterCustomerResponse(_ context.Context, response interface{}) (in
 	}, resp.Err
 }
 
-func makeRegisterCustomerEndpoint(c di.Container) endpoint.Endpoint {
+func makeRegisterCustomerEndpoint(ctn di.Container) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		app := di.Get(ctx, constants.ApplicationKey).(*application.Application)
+		app := ctn.Get(constants.ApplicationKey).(*application.Application)
 
 		req := request.(registerCustomerRequest)
 		err := app.Commands.RegisterCustomerHandler.Handle(ctx, commands.RegisterCustomer{

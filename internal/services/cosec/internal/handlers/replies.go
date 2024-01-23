@@ -21,15 +21,14 @@ func NewReplyHandlers(
 	return am.NewReplyHandler(reg, orchestrator, mws...)
 }
 
-func RegisterReplyHandlers(container di.Container, db database.DB) error {
+func RegisterReplyHandlers(ctn di.Container, db database.DB) error {
 	rawMsgHandler := am.MessageHandlerFunc(func(ctx context.Context, msg am.IncomingMessage) error {
-		ctx = container.Scoped(ctx)
 		return db.WithTx(ctx, func(ctx context.Context) error {
-			return di.Get(ctx, constants.ReplyHandlersKey).(am.MessageHandler).HandleMessage(ctx, msg)
+			return ctn.Get(constants.ReplyHandlersKey).(am.MessageHandler).HandleMessage(ctx, msg)
 		})
 	})
 
-	subsciber := container.Get(constants.MessageSubscriberKey).(am.MessageSubscriber)
+	subsciber := ctn.Get(constants.MessageSubscriberKey).(am.MessageSubscriber)
 
 	return registerReplyHandlers(subsciber, rawMsgHandler)
 }

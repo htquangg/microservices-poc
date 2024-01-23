@@ -16,7 +16,7 @@ var _ orderpb.OrderServiceServer = (*orderServer)(nil)
 type orderServer struct {
 	orderpb.UnimplementedOrderServiceServer
 
-	c  di.Container
+	ctn  di.Container
 	db database.DB
 
 	createOrder grpc_transport.Handler
@@ -24,14 +24,14 @@ type orderServer struct {
 }
 
 func registerOrderServer(
-	c di.Container,
+	ctn di.Container,
 	db database.DB,
 	registrar grpc.ServiceRegistrar,
 ) error {
-	endpoints := makeOrderEndpoints(c)
+	endpoints := makeOrderEndpoints(ctn)
 
 	orderpb.RegisterOrderServiceServer(registrar, orderServer{
-		c:  c,
+		ctn:  ctn,
 		db: db,
 		createOrder: grpc_transport.NewServer(
 			endpoints.createOrderEndpoint,
@@ -52,8 +52,6 @@ func (s orderServer) CreateOrder(
 	ctx context.Context,
 	request *orderpb.CreateOrderRequest,
 ) (*orderpb.CreateOrderResponse, error) {
-	ctx = s.c.Scoped(ctx)
-
 	var resp interface{}
 
 	err := s.db.WithTx(ctx, func(ctx context.Context) (err error) {
@@ -71,8 +69,6 @@ func (s orderServer) CancelOrder(
 	ctx context.Context,
 	request *orderpb.CancelOrderRequest,
 ) (*orderpb.CancelOrderResponse, error) {
-	ctx = s.c.Scoped(ctx)
-
 	var resp interface{}
 
 	err := s.db.WithTx(ctx, func(ctx context.Context) (err error) {

@@ -27,15 +27,15 @@ func NewAggregateRepository[T EventSourcedAggregate](
 	aggreagateName string,
 	registry registry.Registry,
 	store AggregateStore,
-) aggreagateRepository[T] {
-	return aggreagateRepository[T]{
+) *aggreagateRepository[T] {
+	return &aggreagateRepository[T]{
 		aggregateName: aggreagateName,
 		registry:      registry,
 		store:         store,
 	}
 }
 
-func (r aggreagateRepository[T]) Load(ctx context.Context, aggregateID string) (agg T, err error) {
+func (r *aggreagateRepository[T]) Load(ctx context.Context, aggregateID string) (agg T, err error) {
 	var v interface{}
 	v, err = r.registry.Build(
 		r.aggregateName,
@@ -58,7 +58,7 @@ func (r aggreagateRepository[T]) Load(ctx context.Context, aggregateID string) (
 	return agg, nil
 }
 
-func (r aggreagateRepository[T]) Save(ctx context.Context, aggregate T) error {
+func (r *aggreagateRepository[T]) Save(ctx context.Context, aggregate T) error {
 	if aggregate.Version() == aggregate.PendingVersion() {
 		return nil
 	}

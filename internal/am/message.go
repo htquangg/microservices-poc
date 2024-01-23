@@ -110,23 +110,23 @@ func (f MessageHandlerFunc) HandleMessage(ctx context.Context, cmd IncomingMessa
 }
 
 func NewMessagePublisher(publisher MessagePublisher, mws ...MessagePublisherMiddleware) MessagePublisher {
-	return messagePublisher{
+	return &messagePublisher{
 		publisher: MessagePublisherWithMiddleware(publisher, mws...),
 	}
 }
 
-func (p messagePublisher) Publish(ctx context.Context, topicName string, msg ...Message) error {
+func (p *messagePublisher) Publish(ctx context.Context, topicName string, msg ...Message) error {
 	return p.publisher.Publish(ctx, topicName, msg...)
 }
 
 func NewMessageSubscriber(subscriber MessageSubscriber, mws ...MessageHandlerMiddleware) MessageSubscriber {
-	return messageSubscriber{
+	return &messageSubscriber{
 		subscriber: subscriber,
 		mws:        mws,
 	}
 }
 
-func (s messageSubscriber) Subscribe(
+func (s *messageSubscriber) Subscribe(
 	topicName string,
 	handler MessageHandler,
 	options ...SubscriberOption,
@@ -134,6 +134,6 @@ func (s messageSubscriber) Subscribe(
 	return s.subscriber.Subscribe(topicName, MessageHandlerWithMiddleware(handler, s.mws...), options...)
 }
 
-func (s messageSubscriber) Unsubscribe() error {
+func (s *messageSubscriber) Unsubscribe() error {
 	return s.subscriber.Unsubscribe()
 }

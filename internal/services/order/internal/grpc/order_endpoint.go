@@ -19,10 +19,10 @@ type orderEndpoints struct {
 	cancelOrderEndpoint endpoint.Endpoint
 }
 
-func makeOrderEndpoints(c di.Container) orderEndpoints {
+func makeOrderEndpoints(ctn di.Container) orderEndpoints {
 	return orderEndpoints{
-		createOrderEndpoint: makeCreateOrderEndpoint(c),
-		cancelOrderEndpoint: makeCancelOrderEndpoint(c),
+		createOrderEndpoint: makeCreateOrderEndpoint(ctn),
+		cancelOrderEndpoint: makeCancelOrderEndpoint(ctn),
 	}
 }
 
@@ -74,9 +74,9 @@ func endcodeCreateOrderResponse(_ context.Context, response interface{}) (interf
 	}, resp.Err
 }
 
-func makeCreateOrderEndpoint(c di.Container) endpoint.Endpoint {
+func makeCreateOrderEndpoint(ctn di.Container) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		app := di.Get(ctx, constants.ApplicationKey).(*application.Application)
+		app := ctn.Get(constants.ApplicationKey).(*application.Application)
 
 		req := request.(createOrderRequest)
 		err := app.Commands.CreateOrderHandler.Handle(ctx, commands.CreateOrder{
@@ -116,9 +116,9 @@ func encodeCancelOrderResponse(_ context.Context, response interface{}) (interfa
 	return &orderpb.CancelOrderResponse{}, resp.Err
 }
 
-func makeCancelOrderEndpoint(c di.Container) endpoint.Endpoint {
+func makeCancelOrderEndpoint(ctn di.Container) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		app := di.Get(ctx, constants.ApplicationKey).(*application.Application)
+		app := ctn.Get(constants.ApplicationKey).(*application.Application)
 
 		req := request.(cancelOrderRequest)
 		err := app.Commands.CancelOrderHandler.Handle(ctx, commands.CancelOrder{

@@ -37,13 +37,13 @@ var (
 	_ am.Message     = (*outboxMessage)(nil)
 )
 
-func NewOutboxStore(db database.DB) OutboxStore {
-	return OutboxStore{
+func NewOutboxStore(db database.DB) *OutboxStore {
+	return &OutboxStore{
 		db: db,
 	}
 }
 
-func (s OutboxStore) Save(ctx context.Context, msgs ...am.Message) error {
+func (s *OutboxStore) Save(ctx context.Context, msgs ...am.Message) error {
 	if len(msgs) == 0 {
 		return nil
 	}
@@ -86,7 +86,7 @@ func (s OutboxStore) Save(ctx context.Context, msgs ...am.Message) error {
 	return err
 }
 
-func (s OutboxStore) FindUnpublished(ctx context.Context, currentOffset string, limit int) ([]am.Message, error) {
+func (s *OutboxStore) FindUnpublished(ctx context.Context, currentOffset string, limit int) ([]am.Message, error) {
 	query := s.table("SELECT id, subject, name, data, metadata, sent_at FROM %s " +
 		"WHERE id > ? AND published_at IS NULL ORDER BY id ASC LIMIT ?")
 
@@ -121,7 +121,7 @@ func (s OutboxStore) FindUnpublished(ctx context.Context, currentOffset string, 
 	return msgs, nil
 }
 
-func (s OutboxStore) MarkPublished(ctx context.Context, currentOffset string, lastOffset string) error {
+func (s *OutboxStore) MarkPublished(ctx context.Context, currentOffset string, lastOffset string) error {
 	query := s.table("UPDATE %s SET published_at = CURRENT_TIMESTAMP where id >= ? and id <= ?")
 
 	_, err := s.db.Exec(ctx, query, currentOffset, lastOffset)

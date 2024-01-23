@@ -8,7 +8,7 @@ import (
 	"github.com/htquangg/microservices-poc/internal/kafka"
 	mysql_internal "github.com/htquangg/microservices-poc/internal/mysql"
 	"github.com/htquangg/microservices-poc/internal/registry"
-	pb_customer "github.com/htquangg/microservices-poc/internal/services/customer/proto"
+	"github.com/htquangg/microservices-poc/internal/services/customer/customerpb"
 	"github.com/htquangg/microservices-poc/internal/services/notification/internal/application"
 	"github.com/htquangg/microservices-poc/internal/services/notification/internal/grpc"
 	"github.com/htquangg/microservices-poc/internal/services/notification/internal/handlers"
@@ -20,7 +20,7 @@ import (
 func startUp(ctx context.Context, svc system.Service) error {
 	// setup driven adapters
 	reg := registry.New()
-	if err := pb_customer.Registrations(reg); err != nil {
+	if err := customerpb.Registrations(reg); err != nil {
 		return err
 	}
 	inboxStore := mysql_internal.NewInboxStore(svc.DB())

@@ -8,7 +8,7 @@ import (
 )
 
 func RegisterServer(
-	c di.Container,
+	ctn di.Container,
 	db database.DB,
 	registrar grpc.ServiceRegistrar,
 ) error {

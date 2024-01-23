@@ -159,13 +159,13 @@ func NewReplyHandler(
 	handler ddd.ReplyHandler[ddd.Reply],
 	mws ...MessageHandlerMiddleware,
 ) MessageHandler {
-	return MessageHandlerWithMiddleware(replyMessageHandler{
+	return MessageHandlerWithMiddleware(&replyMessageHandler{
 		reg:     reg,
 		handler: handler,
 	}, mws...)
 }
 
-func (h replyMessageHandler) HandleMessage(ctx context.Context, msg IncomingMessage) error {
+func (h *replyMessageHandler) HandleMessage(ctx context.Context, msg IncomingMessage) error {
 	var replyData proto_am.ReplyMessageData
 
 	err := proto.Unmarshal(msg.Data(), &replyData)

@@ -21,13 +21,13 @@ type InboxStore struct {
 
 var _ tm.InboxStore = (*InboxStore)(nil)
 
-func NewInboxStore(db database.DB) InboxStore {
-	return InboxStore{
+func NewInboxStore(db database.DB) *InboxStore {
+	return &InboxStore{
 		db: db,
 	}
 }
 
-func (s InboxStore) Save(ctx context.Context, msg am.IncomingMessage) error {
+func (s *InboxStore) Save(ctx context.Context, msg am.IncomingMessage) error {
 	query := "INSERT INTO %s (id, subject, name, data, metadata, sent_at, received_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
 
 	metadata, err := json.Marshal(msg.Metadata())
