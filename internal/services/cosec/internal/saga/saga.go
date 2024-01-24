@@ -78,5 +78,8 @@ func (s *createOrderSaga) refundPayment(
 }
 
 func (s *createOrderSaga) approveOrder(ctx context.Context, data *models.CreateOrderData) (string, ddd.Command, error) {
-	panic("unimplemented")
+	return orderpb.CommandChannel, ddd.NewCommand(orderpb.ApproveOrderCommand, &orderpb.ApproveOrder{
+		Id:         data.OrderID,
+		ShoppingId: "",
+	}), nil
 }

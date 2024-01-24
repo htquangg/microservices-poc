@@ -16,8 +16,8 @@ var _ orderpb.OrderServiceServer = (*orderServer)(nil)
 type orderServer struct {
 	orderpb.UnimplementedOrderServiceServer
 
-	ctn  di.Container
-	db database.DB
+	ctn di.Container
+	db  database.DB
 
 	createOrder grpc_transport.Handler
 	cancelOrder grpc_transport.Handler
@@ -31,8 +31,8 @@ func registerOrderServer(
 	endpoints := makeOrderEndpoints(ctn)
 
 	orderpb.RegisterOrderServiceServer(registrar, orderServer{
-		ctn:  ctn,
-		db: db,
+		ctn: ctn,
+		db:  db,
 		createOrder: grpc_transport.NewServer(
 			endpoints.createOrderEndpoint,
 			decodeCreateOrderRequest,

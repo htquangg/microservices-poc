@@ -19,7 +19,11 @@ type integrationEventHandlers[T ddd.Event] struct {
 	app *application.Application
 }
 
-func NewIntegrationEventHandlers(reg registry.Registry, app *application.Application, mws ...am.MessageHandlerMiddleware) am.MessageHandler {
+func NewIntegrationEventHandlers(
+	reg registry.Registry,
+	app *application.Application,
+	mws ...am.MessageHandlerMiddleware,
+) am.MessageHandler {
 	return am.NewEventHandler(reg, integrationEventHandlers[ddd.Event]{
 		app: app,
 	}, mws...)

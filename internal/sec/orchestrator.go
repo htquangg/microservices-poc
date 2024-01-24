@@ -75,7 +75,11 @@ func (o *orchestrator[T]) HandleReply(ctx context.Context, reply ddd.Reply) erro
 	return o.processResult(ctx, result)
 }
 
-func (o *orchestrator[T]) handle(ctx context.Context, sagaCtx *SagaContext[T], reply ddd.Reply) (*stepResult[T], error) {
+func (o *orchestrator[T]) handle(
+	ctx context.Context,
+	sagaCtx *SagaContext[T],
+	reply ddd.Reply,
+) (*stepResult[T], error) {
 	step := o.saga.getSteps()[sagaCtx.Step]
 
 	err := step.handle(ctx, sagaCtx, reply)

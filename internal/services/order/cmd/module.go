@@ -116,6 +116,17 @@ func startUp(ctx context.Context, svc system.Service) error {
 			), nil
 		},
 	})
+	builder.Add(
+		di.Def{
+			Name:  constants.ReplyPublisherKey,
+			Scope: di.App,
+			Build: func(ctn di.Container) (interface{}, error) {
+				return am.NewReplyPublisher(
+					ctn.Get(constants.RegistryKey).(registry.Registry),
+					ctn.Get(constants.MessagePublisherKey).(am.MessagePublisher),
+				), nil
+			},
+		})
 	builder.Add(di.Def{
 		Name:  constants.OrderESRepoKey,
 		Scope: di.App,
@@ -161,16 +172,31 @@ func startUp(ctx context.Context, svc system.Service) error {
 				nil
 		},
 	})
+	builder.Add(di.Def{
+		Name:  constants.CommandHandlersKey,
+		Scope: di.App,
+		Build: func(ctn di.Container) (interface{}, error) {
+			return handlers.NewCommandHandlers(
+				ctn.Get(constants.RegistryKey).(registry.Registry),
+				ctn.Get(constants.ReplyPublisherKey).(am.ReplyPublisher),
+				ctn.Get(constants.ApplicationKey).(*application.Application),
+				tm.InboxHandler(ctn.Get(constants.InboxStoreKey).(tm.InboxStore)),
+			), nil
+		},
+	})
 	outboxProcessor := tm.NewOutboxProcessor(kafkaProducer, mysql_internal.NewOutboxStore(svc.DB()))
 
-	container := builder.Build()
+	ctn := builder.Build()
 
 	// setup driver adapters
-	if err := grpc.RegisterServer(container, svc.DB(), svc.RPC()); err != nil {
+	if err := grpc.RegisterServer(ctn, svc.DB(), svc.RPC()); err != nil {
 		return err
 	}
-	handlers.RegisterDomainEventHandlers(container)
-	handlers.RegisterIntegrationEventHandlers(container, svc.DB())
+	handlers.RegisterDomainEventHandlers(ctn)
+	handlers.RegisterIntegrationEventHandlers(ctn, svc.DB())
+	if err := handlers.RegisterCommandHandlers(ctn, svc.DB()); err != nil {
+		return err
+	}
 	startOutboxProcessor(ctx, outboxProcessor, svc.Logger())
 
 	return nil

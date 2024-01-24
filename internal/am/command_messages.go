@@ -15,7 +15,7 @@ import (
 const (
 	CommandHandlerPrefix       = "COMMAND_"
 	CommandNameHandler         = CommandHandlerPrefix + "NAME"
-	CommandReplyChannelHandler = "CommandHandlerPrefix" + "REPLY_CHANNEL"
+	CommandReplyChannelHandler = CommandHandlerPrefix + "REPLY_CHANNEL"
 )
 
 type (
@@ -177,7 +177,10 @@ func (h commandMessageHandler) HandleMessage(ctx context.Context, msg IncomingMe
 		msg:        msg,
 	}
 
-	destination := commandMsg.Metadata().Get(CommandReplyChannelHandler).(string)
+	destination, ok := commandMsg.Metadata().Get(CommandReplyChannelHandler).(string)
+	if !ok {
+		return nil
+	}
 
 	reply, err := h.handler.HandleCommand(ctx, commandMsg)
 	if err != nil {

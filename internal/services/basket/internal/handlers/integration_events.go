@@ -90,5 +90,12 @@ func (h integrationHandlers[T]) onStoreRebranded(ctx context.Context, event T) e
 
 func (h integrationHandlers[T]) onProductAdded(ctx context.Context, event ddd.Event) error {
 	payload := event.Payload().(*storepb.ProductAdded)
-	return h.productRepo.Add(ctx, payload.GetId(), payload.GetStoreId(), payload.GetName(), payload.GetSku(), payload.GetPrice())
+	return h.productRepo.Add(
+		ctx,
+		payload.GetId(),
+		payload.GetStoreId(),
+		payload.GetName(),
+		payload.GetSku(),
+		payload.GetPrice(),
+	)
 }

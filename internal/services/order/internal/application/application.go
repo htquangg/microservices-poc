@@ -16,6 +16,7 @@ type (
 	Commands struct {
 		commands.CreateOrderHandler
 		commands.CancelOrderHandler
+		commands.ApproveOrderHandler
 	}
 
 	Queries struct{}
@@ -28,8 +29,9 @@ func New(
 ) *Application {
 	return &Application{
 		Commands: Commands{
-			CreateOrderHandler: commands.NewCreateOrderHandler(orderESRepo, publisher, log),
-			CancelOrderHandler: commands.NewCancelOrderHandler(orderESRepo, publisher, log),
+			CreateOrderHandler:  commands.NewCreateOrderHandler(orderESRepo, publisher, log),
+			CancelOrderHandler:  commands.NewCancelOrderHandler(orderESRepo, publisher, log),
+			ApproveOrderHandler: commands.NewApproveOrderHandler(orderESRepo, publisher, log),
 		},
 	}
 }

@@ -55,7 +55,16 @@ func (s SagaStore) Save(ctx context.Context, sagaName string, sagaCtx *sec.SagaC
 			compensating=new.compensating
 	`)
 
-	_, err := s.db.Exec(ctx, query, sagaCtx.ID, sagaName, sagaCtx.Data, sagaCtx.Step, sagaCtx.Done, sagaCtx.Compensating)
+	_, err := s.db.Exec(
+		ctx,
+		query,
+		sagaCtx.ID,
+		sagaName,
+		sagaCtx.Data,
+		sagaCtx.Step,
+		sagaCtx.Done,
+		sagaCtx.Compensating,
+	)
 
 	return err
 }
