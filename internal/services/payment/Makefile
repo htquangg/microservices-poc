@@ -1,3 +1,5 @@
+GO_ENV=CGO_ENABLED=0 GO111MODULE=on
+
 ifndef GOPATH
 	GOPATH := $(shell go env GOPATH)
 endif
