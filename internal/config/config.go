@@ -17,25 +17,22 @@ func LoadConfig(cfg interface{}) (interface{}, error) {
 	if env == "" {
 		env = constants.Dev
 	}
-	fmt.Println(os.Getenv(constants.ConfigPath))
 
-	configPathFromEnv := viper.Get(constants.ConfigPath)
-	if configPathFromEnv != nil {
-		configPath = configPathFromEnv.(string)
+	configPathFromEnv := os.Getenv(constants.ConfigPath)
+	if configPathFromEnv != "" {
+		configPath = configPathFromEnv
 	} else {
-		// https://stackoverflow.com/questions/31873396/is-it-possible-to-get-the-current-root-of-package-structure-as-a-string-in-golan
-		// https://stackoverflow.com/questions/18537257/how-to-get-the-directory-of-the-currently-running-file
-		d, err := getConfigRootPath()
+		rootPath, err := getConfigRootPath()
 		if err != nil {
 			return nil, err
 		}
-		configPath = d
+		configPath = fmt.Sprintf("%s/config.development.yaml", rootPath)
 	}
 
-	// https://github.com/spf13/viper/issues/390#issuecomment-718756752
-	viper.SetConfigName(fmt.Sprintf("config.%s", env))
-	viper.AddConfigPath(configPath)
+	fmt.Printf("Load config from %s\n", os.Getenv(constants.ConfigPath))
+
 	viper.SetConfigType(constants.Yaml)
+	viper.SetConfigFile(configPath)
 
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, err
@@ -51,6 +48,8 @@ func LoadConfig(cfg interface{}) (interface{}, error) {
 func getConfigRootPath() (string, error) {
 	// Get the current working directory
 	// Getwd gives us the current working directory that we are running our app with `go run` command. in goland we can specify this working directory for the project
+	// https://stackoverflow.com/questions/31873396/is-it-possible-to-get-the-current-root-of-package-structure-as-a-string-in-golan
+	// https://stackoverflow.com/questions/18537257/how-to-get-the-directory-of-the-currently-running-file
 	wd, err := os.Getwd()
 	if err != nil {
 		return "", err
