@@ -5,8 +5,9 @@ import (
 )
 
 type Config struct {
-	Host string `mapstructure:"host"`
-	Port int    `mapstructure:"port"`
+	Registry string `mapstructure:"registry,omitempty"`
+	Host     string `mapstructure:"host,omitempty"`
+	Port     int    `mapstructure:"port,omitempty"`
 }
 
 func (c Config) Address() string {

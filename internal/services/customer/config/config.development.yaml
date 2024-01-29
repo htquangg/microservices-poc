@@ -2,15 +2,17 @@ Name: customer
 Environment: development
 
 Web:
-  Host: 127.0.0.1
+  Host: 0.0.0.0
   Port: 30001
+  Registry: host.docker.internal
 
 Rpc:
-  Host: 127.0.0.1
+  Host: 0.0.0.0
   Port: 30002
+  Registry: host.docker.internal
 
 Mysql:
-  Host: 127.0.0.1
+  Host: host.docker.internal
   Port: 3306
   User: "root"
   Password: "toor"
@@ -24,10 +26,10 @@ Mysql:
   ConnMaxLifetime: 300
 
 Consul:
-  Host: 127.0.0.1
+  Host: host.docker.internal
   Port: 8500
 
 Kafka:
-  Brokers: [ "localhost:9092" ]
+  Brokers: ["host.docker.internal:9092"]
   GroupID: api_gateway_consumer
   InitTopics: true

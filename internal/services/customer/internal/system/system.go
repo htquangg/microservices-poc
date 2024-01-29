@@ -251,7 +251,7 @@ func (s *System) WaitForWebDiscover(ctx context.Context) error {
 			s.webName(),
 			s.webID(),
 			"/healthz",
-			s.cfg.Web.Host,
+			s.cfg.Web.Registry,
 			s.cfg.Web.Port,
 			nil,
 		)
@@ -274,7 +274,7 @@ func (s *System) WaitForRPCDiscover(ctx context.Context) error {
 			s.rpcName(),
 			s.rpcID(),
 			"Health",
-			s.cfg.Rpc.Host,
+			s.cfg.Rpc.Registry,
 			s.cfg.Rpc.Port,
 			nil,
 		)

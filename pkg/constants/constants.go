@@ -3,9 +3,12 @@ package constants
 import "time"
 
 const (
-	ConfigPath  = "CONFIG_PATH"
-	AppEnv      = "APP_ENV"
-	AppRootPath = "APP_ROOT_PATH"
+	ConfigPath   = "CONFIG_PATH"
+	AppEnv       = "APP_ENV"
+	AppRootPath  = "APP_ROOT_PATH"
+	HttpRegistry = "HTTP_REGISTRY"
+	GrpcRegistry = "GRPC_REGISTRY"
+	KafkaBrokers = "KAFKA_BROKERS"
 
 	Yaml = "yaml"
 

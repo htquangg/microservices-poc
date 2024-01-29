@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+
 	"github.com/htquangg/microservices-poc/internal/config"
 	"github.com/htquangg/microservices-poc/internal/kafka"
 	"github.com/htquangg/microservices-poc/pkg/constants"
@@ -26,6 +28,22 @@ type (
 func InitConfig() (*Config, error) {
 	cfg := &Config{}
 	_, err := config.LoadConfig(cfg)
+
+	grpcRegistry := os.Getenv(constants.GrpcRegistry)
+	if grpcRegistry != "" {
+		cfg.Rpc.Registry = grpcRegistry
+	}
+
+	httpRegistry := os.Getenv(constants.HttpRegistry)
+	if httpRegistry != "" {
+		cfg.Web.Registry = httpRegistry
+	}
+
+	kafkaBrokers := os.Getenv(constants.KafkaBrokers)
+	if kafkaBrokers != "" {
+		cfg.Kafka.Brokers = []string{kafkaBrokers}
+	}
+
 	return cfg, err
 }
 
