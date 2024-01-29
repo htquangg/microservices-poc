@@ -1,15 +1,16 @@
-version: "3"
+version: "3.8"
+
+name: microservices-poc
 
 services:
   mysql:
     image: mysql:8.0.34-oracle
-    container_name: mysql
     environment:
       - TZ=UTC
       - MYSQL_ROOT_PASSWORD=toor
       - MYSQL_PASSWORD=toor
     ports:
-      - 3306:3306
+      - "3306:3306"
     volumes:
       - ./mysql/init:/docker-entrypoint-initdb.d
       - "mysqldata:/var/lib/mysql"
@@ -21,29 +22,23 @@ services:
       --lower_case_table_names=1
     privileged: true
     restart: always
-    networks:
-      - microservices-demo
 
   consul:
-    container_name: consul
     image: hashicorp/consul:1.16
     restart: always
     ports:
-      - 8500:8500
-      - 8600:8600/tcp
-      - 8600:8600/udp
+      - "8500:8500"
+      - "8600:8600/tcp"
+      - "8600:8600/udp"
     command: "agent"
     environment:
       - CONSUL_BIND_INTERFACE=eth0
       - CONSUL_CLIENT_INTERFACE=eth0
     volumes:
       - ./consul/config/server.json:/consul/config/server.json:ro
-    networks:
-      - microservices-demo
 
   zookeeper:
     image: confluentinc/cp-zookeeper:7.3.1
-    container_name: zookeeper
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -52,25 +47,27 @@ services:
     volumes:
       - ./data/zookeeper/data:/var/lib/zookeeper/data
       - ./data/zookeeper/log:/var/lib/zookeeper/log
-    networks:
-      - microservices-demo
 
   kafka:
     image: confluentinc/cp-kafka:7.3.1
-    container_name: kafka
     ports:
       - "9092:9092"
-      - "9997:9997"
+      - "29092:29092"
+      - "9999:9999"
     environment:
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:19092,EXTERNAL://${DOCKER_HOST_IP:-host.docker.internal}:9092,
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
       KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:19092,PLAINTEXT_HOST://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_LOG4J_LOGGERS: "kafka.controller=INFO,kafka.producer.async.DefaultEventHandler=INFO,state.change.logger=INFO"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_MESSAGE_MAX_BYTES: 10485760
-      JMX_PORT: 9997
-      KAFKA_JMX_OPTS: -Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Djava.rmi.server.hostname=kafka -Dcom.sun.management.jmxremote.rmi.port=9997
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_JMX_PORT: 9999
+      KAFKA_JMX_HOSTNAME: ${DOCKER_HOST_IP:-127.0.0.1}
+      KAFKA_AUTHORIZER_CLASS_NAME: kafka.security.authorizer.AclAuthorizer
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
     healthcheck:
       test: nc -z localhost 9092 || exit -1
       start_period: 15s
@@ -81,12 +78,25 @@ services:
       - ./data/kafka/data:/var/lib/kafka/data
     depends_on:
       - zookeeper
-    networks:
-      - microservices-demo
 
-networks:
-  microservices-demo:
-    driver: bridge
+  customer-svc:
+    build:
+      context: ./../..
+      args:
+        service: "customer"
+    ports:
+      - "30001:30001"
+      - "30002:30002"
+    restart: always
+    environment:
+      - GRPC_REGISTRY=customer-svc
+      - HTTP_REGISTRY=customer-svc
+      - KAFKA_BROKERS=kafka:9092
+    depends_on:
+      - mysql
+      - consul
+      - zookeeper
+      - kafka
 
 volumes:
   consuldata:
