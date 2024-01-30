@@ -84,16 +84,28 @@ proto: ## compile proto file
 #
 ###############################################################################
 .PHONY: docker-up
-docker-up: ## docker-compose up and detach
+docker-up: docker-monitoring-up ## docker-compose up and detach
 	@docker-compose -f ./deployments/docker-compose/docker-compose.dev.yml up -d
 
+.PHONY: docker-monitoring-up
+docker-monitoring-up: ## docker-compose monitoring up and detach
+	@docker-compose -f ./deployments/docker-compose/docker-compose.monitoring.dev.yml up -d
+
 .PHONY: docker-down
-docker-down: ## docker-compose down
+docker-down: docker-monitoring-down ## docker-compose down
 	@docker-compose -f ./deployments/docker-compose/docker-compose.dev.yml down
 
+.PHONY: docker-monitoring-down
+docker-monitoring-down: ## docker-compose monitoring down
+	@docker-compose -f ./deployments/docker-compose/docker-compose.monitoring.dev.yml down
+
 .PHONY: docker-down-volumes
-docker-down-volumes: ## docker-compose down and delele volumes
+docker-down-volumes: docker-monitoring-down-volumes ## docker-compose down and delele volumes
 	@docker-compose -f ./deployments/docker-compose/docker-compose.dev.yml down --volumes
+
+.PHONY: docker-monitoring-down-volumes
+docker-monitoring-down-volumes: ## docker-compose monitoring down and delele volumes
+	@docker-compose -f ./deployments/docker-compose/docker-compose.monitoring.dev.yml down --volumes
 
 ###############################################################################
 # Install Tools and deps
