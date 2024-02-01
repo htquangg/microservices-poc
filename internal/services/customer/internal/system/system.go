@@ -20,6 +20,11 @@ import (
 	grpc_transport "github.com/go-kit/kit/transport/grpc"
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
+	"go.opentelemetry.io/contrib/instrumentation/runtime"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -27,16 +32,16 @@ import (
 )
 
 type System struct {
-	cfg *Config
-
-	db database.DB
-
+	cfg       *Config
+	db        database.DB
 	router    *mux.Router
 	rpc       *grpc.Server
 	discovery discovery.Registry
+	logger    logger.Logger
+	waiter    waiter.Waiter
 
-	logger logger.Logger
-	waiter waiter.Waiter
+	tp *sdktrace.TracerProvider
+	mp *sdkmetric.MeterProvider
 
 	isRunningHTTP bool
 	isRunningRPC  bool
@@ -51,6 +56,10 @@ func New(cfg *config.Config) (*System, error) {
 	s.initLogger()
 
 	if err := s.initDB(); err != nil {
+		return nil, err
+	}
+
+	if err := s.initOpenTelemetry(); err != nil {
 		return nil, err
 	}
 
@@ -74,6 +83,56 @@ func (s *System) initWaiter() {
 
 func (s *System) Waiter() waiter.Waiter {
 	return s.waiter
+}
+
+func (s *System) initOpenTelemetry() error {
+	if err := s.initTracerProvider(); err != nil {
+		return err
+	}
+
+	if err := s.initMeterProvider(); err != nil {
+		return err
+	}
+
+	if err := runtime.Start(runtime.WithMinimumReadMemStatsInterval(time.Second)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *System) initTracerProvider() error {
+	tp, err := initTracerProvider()
+	if err != nil {
+		return err
+	}
+
+	s.tp = tp
+
+	s.waiter.Cleanup(func() {
+		if err := s.tp.Shutdown(context.Background()); err != nil {
+			s.logger.Err("ran into an issue shutting down the tracer provider", err)
+		}
+	})
+
+	return nil
+}
+
+func (s *System) initMeterProvider() error {
+	mp, err := initMeterProvider()
+	if err != nil {
+		return err
+	}
+
+	s.mp = mp
+
+	s.waiter.Cleanup(func() {
+		if err := s.mp.Shutdown(context.Background()); err != nil {
+			s.logger.Err("ran into an issue shutting down the meter provider", err)
+		}
+	})
+
+	return nil
 }
 
 func (s *System) initLogger() {
@@ -113,6 +172,8 @@ func (s *System) initRouter() {
 	s.router.Use(handlers.CompressHandler)
 	s.router.HandleFunc("/healthz", web.HealthCheck).
 		Methods(http.MethodGet, http.MethodHead)
+	s.router.HandleFunc("/metrics", promhttp.Handler().ServeHTTP).
+		Methods(http.MethodGet)
 }
 
 func (s *System) Router() *mux.Router {
@@ -121,7 +182,12 @@ func (s *System) Router() *mux.Router {
 
 func (s *System) initRPC() {
 	s.rpc = grpc.NewServer(
-		grpc.UnaryInterceptor(grpc_transport.Interceptor),
+		grpc.StatsHandler(
+			otelgrpc.NewServerHandler(),
+		),
+		grpc.ChainUnaryInterceptor(
+			grpc_transport.Interceptor,
+		),
 	)
 
 	if s.cfg.IsDevelopment() {
